@@ -69,14 +69,13 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
 
-    # WhiteNoise para archivos estáticos en Render
+    # WhiteNoise para Render
     'whitenoise.middleware.WhiteNoiseMiddleware',
 
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
 
-    # Autenticación Django
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 
     # Middleware propio: fuerza validación 2FA
@@ -182,7 +181,7 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 
 # ============================================================
-# CSRF (NECESARIO EN RENDER)
+# CSRF (RENDER)
 # ============================================================
 
 CSRF_TRUSTED_ORIGINS = [
@@ -191,20 +190,22 @@ CSRF_TRUSTED_ORIGINS = [
 
 
 # ============================================================
-# CONFIGURACIÓN DE CORREO (2FA) - Gmail SSL
+# CONFIGURACIÓN DE CORREO (2FA) - SENDGRID SMTP ✅
 # ============================================================
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 465
-EMAIL_USE_SSL = True
-EMAIL_USE_TLS = False
+EMAIL_HOST = "smtp.sendgrid.net"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
 
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "cesfamtesis@gmail.com")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+# IMPORTANTE:
+# USER = "apikey"
+# PASSWORD = tu API KEY de SendGrid
+EMAIL_HOST_USER = "apikey"
+EMAIL_HOST_PASSWORD = os.environ.get("SENDGRID_API_KEY")
 
 EMAIL_TIMEOUT = 10
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+DEFAULT_FROM_EMAIL = "cesfamtesis@gmail.com"
 
 
 # ============================================================

@@ -20,18 +20,28 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # CONFIGURACIÓN BÁSICA / SEGURIDAD
 # ============================================================
 
-SECRET_KEY = os.environ.get(
-    "SECRET_KEY",
-    "django-insecure-dev-key"
+# Acepta SECRET_KEY o DJANGO_SECRET_KEY (Render-friendly)
+SECRET_KEY = (
+    os.environ.get("SECRET_KEY")
+    or os.environ.get("DJANGO_SECRET_KEY")
+    or "django-insecure-dev-key"
 )
 
-DEBUG = os.environ.get("DEBUG", "False") == "True"
+# Acepta DEBUG o DJANGO_DEBUG
+DEBUG = (
+    os.environ.get("DEBUG")
+    or os.environ.get("DJANGO_DEBUG")
+    or "False"
+) == "True"
 
-ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-    ".onrender.com",
-]
+# Acepta ALLOWED_HOSTS o DJANGO_ALLOWED_HOSTS
+_raw_hosts = (
+    os.environ.get("ALLOWED_HOSTS")
+    or os.environ.get("DJANGO_ALLOWED_HOSTS")
+    or "localhost,127.0.0.1,.onrender.com"
+)
+
+ALLOWED_HOSTS = [h.strip() for h in _raw_hosts.split(",") if h.strip()]
 
 
 # ============================================================
@@ -86,7 +96,7 @@ ROOT_URLCONF = 'cesfam_app.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],  # Templates se cargan desde cada app
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -142,7 +152,6 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 
@@ -173,7 +182,16 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 
 # ============================================================
-# CONFIGURACIÓN DE CORREO (2FA) - Gmail SSL (Render compatible)
+# CSRF (NECESARIO EN RENDER)
+# ============================================================
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://cesfamapp-predefensa.onrender.com",
+]
+
+
+# ============================================================
+# CONFIGURACIÓN DE CORREO (2FA) - Gmail SSL
 # ============================================================
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
@@ -185,8 +203,7 @@ EMAIL_USE_TLS = False
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "cesfamtesis@gmail.com")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 
-EMAIL_TIMEOUT = 10  # evita que Gunicorn se quede colgado
-
+EMAIL_TIMEOUT = 10
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 

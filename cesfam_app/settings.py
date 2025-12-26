@@ -20,21 +20,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # CONFIGURACIÓN BÁSICA / SEGURIDAD
 # ============================================================
 
-# Acepta SECRET_KEY o DJANGO_SECRET_KEY (Render-friendly)
+# SECRET KEY (Render friendly)
 SECRET_KEY = (
     os.environ.get("SECRET_KEY")
     or os.environ.get("DJANGO_SECRET_KEY")
     or "django-insecure-dev-key"
 )
 
-# Acepta DEBUG o DJANGO_DEBUG
+# DEBUG (Render friendly)
 DEBUG = (
     os.environ.get("DEBUG")
     or os.environ.get("DJANGO_DEBUG")
     or "False"
 ) == "True"
 
-# Acepta ALLOWED_HOSTS o DJANGO_ALLOWED_HOSTS
+# ALLOWED HOSTS (Render friendly)
 _raw_hosts = (
     os.environ.get("ALLOWED_HOSTS")
     or os.environ.get("DJANGO_ALLOWED_HOSTS")
@@ -175,7 +175,7 @@ LOGOUT_REDIRECT_URL = "accounts:login"
 # SEGURIDAD DE SESIÓN
 # ============================================================
 
-SESSION_COOKIE_AGE = 900
+SESSION_COOKIE_AGE = 900  # 15 minutos
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
@@ -194,13 +194,15 @@ CSRF_TRUSTED_ORIGINS = [
 # ============================================================
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
 EMAIL_HOST = "smtp.sendgrid.net"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
 
-# IMPORTANTE:
+# SendGrid SMTP requiere:
 # USER = "apikey"
-# PASSWORD = tu API KEY de SendGrid
+# PASSWORD = SENDGRID_API_KEY
 EMAIL_HOST_USER = "apikey"
 EMAIL_HOST_PASSWORD = os.environ.get("SENDGRID_API_KEY")
 

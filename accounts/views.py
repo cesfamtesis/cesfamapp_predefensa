@@ -36,34 +36,34 @@ class CustomLoginView(LoginView):
         """
         Se ejecuta cuando el login (usuario/contraseña) es válido.
 
-        IMPORTANTE (seguridad):
-        - Aquí solo se valida el primer factor (credenciales).
-        - El acceso a módulos del sistema queda bloqueado hasta validar 2FA.
-        - El middleware TwoFAMiddleware controla ese bloqueo vía sesión.
+        Seguridad:
+        - Aquí solo se valida el primer factor.
+        - El acceso al sistema queda bloqueado hasta validar 2FA.
+        - TwoFAMiddleware controla el acceso vía sesión.
         """
         user = form.get_user()
 
-        # 1) Inicio de sesión estándar (primer factor)
+        # 1) Login estándar (primer factor)
         login(self.request, user)
 
-        # 2) Marcar que el usuario aún NO ha verificado el segundo factor
+        # 2) Marcar sesión como NO verificada en 2FA
         self.request.session["twofa_verified"] = False
 
-        # 3) Envío del código 2FA al correo
+        # 3) Enviar código 2FA (no bloqueante)
         enviar_codigo_2fa(user)
 
-        # 4) Redirección a pantalla de verificación
+        # 4) Redirigir a verificación 2FA
         return redirect("accounts:verificar_2fa")
 
 
 # ============================================================
-# LOGOUT CON REGISTRO DE AUDITORÍA
+# LOGOUT CON AUDITORÍA
 # ============================================================
 
 @login_required
 def logout_view(request):
     """
-    Cierra sesión y registra el evento en auditoría.
+    Cierra sesión y registra auditoría.
     """
     registrar_auditoria(
         request,
@@ -81,7 +81,11 @@ def logout_view(request):
 
 def enviar_codigo_2fa(user):
     """
-    Genera un código 2FA de 6 dígitos, lo guarda en BD y lo envía por correo.
+    Genera un código 2FA, lo guarda en BD y lo envía por correo.
+
+    IMPORTANTE:
+    - El envío de correo NO debe romper el login.
+    - Se maneja con tolerancia a fallos (Render-safe).
     """
     codigo = f"{random.randint(100000, 999999)}"
 
@@ -90,7 +94,7 @@ def enviar_codigo_2fa(user):
         code=codigo,
     )
 
-    # Logs de apoyo (solo desarrollo)
+    # Logs de apoyo (desarrollo / demo)
     print("===================================")
     print("✅ Código 2FA generado:", codigo)
     print("📧 Enviando correo a:", user.email)
@@ -98,7 +102,11 @@ def enviar_codigo_2fa(user):
 
     subject = "Código de verificación - Sistema REM CESFAM"
 
-    context = {"user": user, "codigo": codigo}
+    context = {
+        "user": user,
+        "codigo": codigo,
+        "minutos": TWO_FA_EXPIRATION_MINUTES,
+    }
 
     html_content = render_to_string("emails/codigo_2fa.html", context)
 
@@ -116,7 +124,13 @@ def enviar_codigo_2fa(user):
         to=[user.email],
     )
     email.attach_alternative(html_content, "text/html")
-    email.send(fail_silently=False)
+
+    # 🔐 ENVÍO SEGURO (NO BLOQUEANTE)
+    try:
+        email.send(fail_silently=True)
+    except Exception as e:
+        # Nunca debe romper el flujo de login
+        print("❌ Error enviando correo 2FA:", str(e))
 
 
 # ============================================================
@@ -126,19 +140,22 @@ def enviar_codigo_2fa(user):
 @login_required
 def verificar_2fa(request):
     """
-    Vista encargada de validar el código 2FA.
+    Valida el código 2FA ingresado por el usuario.
     """
 
     # --------------------------------------------
-    # REENVIAR CÓDIGO 2FA
+    # REENVIAR CÓDIGO
     # --------------------------------------------
     if request.method == "POST" and "generar_nuevo_codigo" in request.POST:
         enviar_codigo_2fa(request.user)
-        messages.info(request, "Se ha enviado un nuevo código de verificación a tu correo.")
+        messages.info(
+            request,
+            "Se ha enviado un nuevo código de verificación a tu correo."
+        )
         return redirect("accounts:verificar_2fa")
 
     # --------------------------------------------
-    # VALIDACIÓN DEL CÓDIGO INGRESADO
+    # VALIDAR CÓDIGO INGRESADO
     # --------------------------------------------
     if request.method == "POST":
         codigo = (request.POST.get("codigo") or "").strip()
@@ -150,24 +167,29 @@ def verificar_2fa(request):
         registro = TwoFactorCode.objects.filter(
             user=request.user,
             code=codigo,
-            is_used=False
+            is_used=False,
         ).first()
 
         if registro:
-            expiracion = registro.created_at + timedelta(minutes=TWO_FA_EXPIRATION_MINUTES)
+            expiracion = registro.created_at + timedelta(
+                minutes=TWO_FA_EXPIRATION_MINUTES
+            )
 
             if timezone.now() > expiracion:
-                messages.error(request, "El código ha expirado. Solicita uno nuevo.")
+                messages.error(
+                    request,
+                    "El código ha expirado. Solicita uno nuevo."
+                )
                 return redirect("accounts:verificar_2fa")
 
-            # Código válido → marcar como usado
+            # Código válido
             registro.is_used = True
             registro.save()
 
-            # Marcar la sesión como verificada
+            # Marcar sesión como verificada
             request.session["twofa_verified"] = True
 
-            # ✅ AUDITORÍA: INGRESO REAL AL SISTEMA (LOGIN + 2FA)
+            # Auditoría de login completo
             registrar_auditoria(
                 request,
                 AuditLog.ACCION_LOGIN,

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <title>Archivos REM subidos</title>
+    <link rel="icon" href="{% static 'favicon/rem_favicon.ico' %}">
+    <link rel="shortcut icon" href="{% static 'favicon/rem_favicon.ico' %}">
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            background: #f3f4f6;
+            color: #111827;
+        }
+
+        header {
+            background: white;
+            padding: 16px 24px;
+            box-shadow: 0 1px 4px rgba(15, 23, 42, 0.10);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        header a {
+            text-decoration: none;
+            font-size: 14px;
+            color: #2563eb;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 24px auto 40px;
+            padding: 0 16px;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            border: 1px solid #2563eb;
+            color: #1d4ed8;
+            background: #eff6ff;
+            transition: background 0.12s ease, color 0.12s ease;
+        }
+
+        .btn:hover {
+            background: #1d4ed8;
+            color: white;
+        }
+
+        .btn-danger {
+            border-color: #dc2626;
+            color: #b91c1c;
+            background: #fee2e2;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            color: white;
+        }
+
+        .small { font-size: 13px; color: #6b7280; }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 18px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-main {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .file-name {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .file-meta {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .card-actions a,
+        .card-actions form {
+            margin-left: 8px;
+            display: inline-block;
+        }
+
+        .card-actions form {
+            margin-bottom: 0;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 40px 0;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>📁 Archivos REM subidos</h1>
+    <a href="/home/">⬅ Volver al menú principal</a>
+</header>
+
+<div class="container">
+
+    <div class="actions">
+        <div class="small">
+            {% if archivos %}
+                Se han cargado {{ archivos|length }} archivo(s) REM activos.
+            {% else %}
+                No hay archivos cargados activos todavía.
+            {% endif %}
+        </div>
+
+        <a href="/subir/" class="btn">➕ Subir nuevo archivo</a>
+    </div>
+
+    {% if archivos %}
+        {% for a in archivos %}
+            <div class="card">
+                <div class="card-main">
+                    <div class="file-name">{{ a.nombre_original }}</div>
+                    <div class="file-meta">
+                        Cargado el {{ a.fecha_carga }}.
+                        {% if a.periodo %}
+                            &nbsp;|&nbsp; Período: {{ a.periodo.anio }}-{{ a.periodo.mes|default_if_none:"" |stringformat:"02d" }}
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card-actions">
+
+                    <!-- BOTÓN PROCESAR -->
+                    <a href="{% url 'procesar_archivo_generico' a.id_archivo %}" class="btn">
+                        🚀 Procesar
+                    </a>
+
+                    <!-- BOTÓN VER REGISTROS -->
+                    <a href="{% url 'ver_registros_archivo' a.id_archivo %}" class="btn"
+                       style="background:#e0f2fe; border-color:#0ea5e9; color:#0369a1;">
+                        📄 Ver registros
+                    </a>
+
+                    <!-- BOTÓN DESACTIVAR (NO ELIMINA, SOLO ACTIVO = FALSE) -->
+                    <form action="{% url 'desactivar_archivo' a.id_archivo %}" method="post"
+                          onsubmit="return confirm('¿Seguro que deseas desactivar este archivo? No se eliminará, solo quedará oculto.');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            🚫 Desactivar
+                        </button>
+                    </form>
+
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty">
+            Aún no has subido consolidaciones REM activas.<br>
+            Usa el botón <strong>“Subir nuevo archivo”</strong> para comenzar.
+        </div>
+    {% endif %}
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <title>Datos REM del período {{ periodo.anio }}-{{ periodo.mes|add:"0"|slice:"-2" }}</title>
+    <link rel="icon" href="{% static 'favicon/rem_favicon.ico' %}">
+    <link rel="shortcut icon" href="{% static 'favicon/rem_favicon.ico' %}">
+    <style>
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            background: #f3f4f6;
+            color: #111827;
+        }
+
+        header {
+            background: linear-gradient(90deg, #2563eb, #0ea5e9);
+            color: #fff;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        header .sub {
+            font-size: 13px;
+            opacity: .9;
+        }
+
+        .btn-back {
+            padding: 8px 14px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,.7);
+            color: #fff;
+            background: transparent;
+            font-size: 13px;
+            text-decoration: none;
+        }
+
+        .btn-back:hover {
+            background: rgba(255,255,255,.15);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 20px auto 32px;
+            padding: 0 16px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 1px 4px rgba(15,23,42,.12);
+            padding: 16px 0;
+        }
+
+        .card-header {
+            padding: 0 16px 10px;
+            font-size: 14px;
+            color: #4b5563;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f9fafb;
+        }
+
+        th, td {
+            padding: 8px 12px;
+            font-size: 13px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .text-right { text-align: right; }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* fila principal por REM (hoja) */
+        .rem-row {
+            background: #e5f0ff;
+            cursor: pointer;
+        }
+
+        .rem-row:hover {
+            background: #dbeafe;
+        }
+
+        /* filas de secciones (se ocultan/ muestran) */
+        .sec-row {
+            display: none;
+            cursor: pointer;
+        }
+
+        .sec-row:nth-child(even) {
+            background: #fefce8;
+        }
+
+        .sec-row:hover {
+            background: #e0f2fe;
+        }
+
+        .sec-indent {
+            padding-left: 32px;
+        }
+
+        .chevron {
+            font-size: 11px;
+            margin-right: 6px;
+        }
+
+        .rem-code {
+            display: inline-block;
+            min-width: 40px;
+            font-weight: 600;
+        }
+
+        .rem-name {
+            font-size: 13px;
+            color: #374151;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div>
+        <h1>Datos REM del período {{ periodo.anio }}-{{ periodo.mes }}</h1>
+        <div class="sub">{{ periodo.descripcion }}</div>
+    </div>
+
+    <a href="{% url 'lista_periodos' %}" class="btn-back">⬅ Volver a períodos</a>
+</header>
+
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            Primero selecciona un <strong>REM</strong>. Luego se desplegarán sus secciones;
+            haz clic en una sección para ver la <strong>tabla completa</strong>.
+        </div>
+
+        <table>
+            <thead>
+            <tr>
+                <th>HOJA / REM</th>
+                <th>SECCIÓN</th>
+                <th class="text-right">N° REGISTROS</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for grupo in grupos %}
+                {# Fila principal del REM (hoja) #}
+                <tr class="rem-row" data-rem="{{ grupo.hoja }}">
+                    <td colspan="3">
+                        <span class="chevron">▶</span>
+                        <span class="rem-code">{{ grupo.hoja }}</span>
+                        <span class="rem-name">— {{ grupo.nombre }}</span>
+                    </td>
+                </tr>
+
+                {# Filas de secciones de ese REM #}
+                {% for item in grupo.secciones %}
+                    <tr class="sec-row"
+                        data-parent="{{ grupo.hoja }}"
+                        data-href="{% url 'ver_detalle_rem' periodo.id_periodo item.hoja item.seccion %}">
+                        <td></td>
+                        <td class="sec-indent">{{ item.seccion }}</td>
+                        <td class="text-right">
+                            <span class="pill">{{ item.total_registros }}</span>
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% empty %}
+                <tr>
+                    <td colspan="3">No hay datos REM asociados a este período todavía.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Toggle de secciones al hacer clic en la fila del REM
+    document.querySelectorAll('.rem-row').forEach(function (row) {
+        row.addEventListener('click', function () {
+            const rem = this.getAttribute('data-rem');
+            const chevron = this.querySelector('.chevron');
+            const open = chevron.textContent === '▼';
+
+            // Cambiar icono
+            chevron.textContent = open ? '▶' : '▼';
+
+            // Mostrar / ocultar secciones de ese REM
+            document.querySelectorAll('.sec-row[data-parent="' + rem + '"]')
+                .forEach(function (secRow) {
+                    secRow.style.display = open ? 'none' : 'table-row';
+                });
+        });
+    });
+
+    // Navegar al detalle al hacer clic en una sección
+    document.querySelectorAll('.sec-row').forEach(function (row) {
+        row.addEventListener('click', function () {
+            const url = this.getAttribute('data-href');
+            if (url) {
+                window.location.href = url;
+            }
+        });
+    });
+</script>
+</body>
+</html>

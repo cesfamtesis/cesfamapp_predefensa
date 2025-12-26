@@ -1,0 +1,7 @@
+Django==5.2.7
+gunicorn
+whitenoise
+dj-database-url
+psycopg2-binary
+openpyxl
+reportlab

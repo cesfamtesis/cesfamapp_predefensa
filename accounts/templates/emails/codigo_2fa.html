@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Código de verificación</title>
+</head>
+<body style="margin:0; padding:0; background:#0f172a; font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#0f172a; padding:24px 0;">
+    <tr>
+        <td align="center">
+            <table width="480" cellpadding="0" cellspacing="0" style="background:#020617; border-radius:16px; overflow:hidden; border:1px solid #1e293b;">
+                <!-- Header -->
+                <tr>
+                    <td style="padding:16px 24px; background:linear-gradient(135deg,#1d4ed8,#0ea5e9); color:#e5e7eb; font-size:14px; text-transform:uppercase; letter-spacing:.12em;">
+                        🔐 Sistema REM CESFAM · Verificación de identidad
+                    </td>
+                </tr>
+
+                <!-- Contenido principal -->
+                <tr>
+                    <td style="padding:24px; color:#e5e7eb;">
+                        <h1 style="margin:0 0 12px; font-size:22px; color:#f9fafb;">
+                            Hola {{ user.first_name|default:user.username }},
+                        </h1>
+                        <p style="margin:0 0 16px; font-size:14px; line-height:1.5; color:#cbd5f5;">
+                            Para completar tu acceso al <strong>Sistema REM CESFAM</strong>, ingresa el siguiente
+                            código de verificación en la pantalla de autenticación en 2 pasos.
+                        </p>
+
+                        <div style="margin:18px 0; text-align:center;">
+                            <div style="
+                                display:inline-block;
+                                padding:14px 24px;
+                                border-radius:999px;
+                                background:#f9fafb;
+                                color:#111827;
+                                font-size:24px;
+                                letter-spacing:0.3em;
+                                font-weight:700;
+                            ">
+                                {{ codigo }}
+                            </div>
+                        </div>
+
+                        <p style="margin:0 0 8px; font-size:13px; color:#9ca3af;">
+                            ⏱ <strong>Validez:</strong> 2 minutos desde el momento de envío.
+                        </p>
+                        <p style="margin:0 0 16px; font-size:13px; color:#9ca3af;">
+                            Si no fuiste tú quien intentó iniciar sesión, puedes ignorar este mensaje.
+                        </p>
+
+                        <hr style="border:none; border-top:1px solid #1f2937; margin:16px 0;">
+
+                        <p style="margin:0; font-size:11px; color:#6b7280;">
+                            Este correo fue generado automáticamente por el Sistema REM CESFAM.
+                            No respondas a este mensaje.
+                        </p>
+                    </td>
+                </tr>
+
+                <!-- Footer -->
+                <tr>
+                    <td style="padding:12px 24px; background:#020617; color:#4b5563; font-size:11px; text-align:center;">
+                        Proyecto de Título · Ingeniería en Informática · CESFAM Ultraestación “Dr. Raúl Martínez González”.
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

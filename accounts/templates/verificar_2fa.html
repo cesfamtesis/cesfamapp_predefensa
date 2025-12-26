@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <title>Verificación · Sistema REM CESFAM</title>
+    <link rel="icon" href="{% static 'favicon/rem_favicon.ico' %}">
+    <link rel="shortcut icon" href="{% static 'favicon/rem_favicon.ico' %}">
+    <style>
+        :root {
+            --primary: #1d4ed8;
+            --primary-light: #38bdf8;
+            --bg: #0f172a;
+            --card-bg: #ffffff;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            background: radial-gradient(circle at top left, #1d4ed8 0, #0f172a 45%, #020617 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .shell {
+            width: 100%;
+            max-width: 1080px;
+            padding: 24px;
+            display: grid;
+            grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+            gap: 24px;
+            align-items: center;
+        }
+
+        .hero {
+            color: #e5e7eb;
+            padding-right: 16px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: rgba(15,23,42,0.65);
+            border: 1px solid rgba(148,163,184,0.45);
+            margin-bottom: 18px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+        }
+
+        .hero-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0 0 12px;
+        }
+
+        .hero-subtitle {
+            font-size: 14px;
+            max-width: 420px;
+            color: #cbd5f5;
+            line-height: 1.4;
+            margin-bottom: 28px;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            max-width: 420px;
+        }
+
+        .hero-pill {
+            background: rgba(15,23,42,0.8);
+            border-radius: 14px;
+            padding: 10px 12px;
+            font-size: 12px;
+            border: 1px solid rgba(55,65,81,0.8);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .hero-foot {
+            margin-top: 24px;
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .card-wrap {
+            display: flex;
+            justify-content: center;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 420px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow:
+                0 22px 45px rgba(15,23,42,0.45),
+                0 0 0 1px rgba(15,23,42,0.08);
+            padding: 26px 26px 22px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(56,189,248,0.12), rgba(37,99,235,0.05));
+            opacity: 0.9;
+            pointer-events: none;
+        }
+
+        .card-inner {
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 650;
+            margin: 0;
+        }
+
+        .card-subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .pill-env {
+            font-size: 11px;
+            padding: 4px 9px;
+            border-radius: 999px;
+            background: #ecfeff;
+            border: 1px solid #67e8f9;
+            color: #0369a1;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+        }
+
+        label {
+            font-size: 13px;
+            color: var(--text-main);
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .field {
+            margin-bottom: 12px;
+        }
+
+        input {
+            width: 100%;
+            padding: 9px 11px;
+            border-radius: 10px;
+            border: 1px solid #d1d5db;
+            font-size: 13px;
+            outline: none;
+            background: #f9fafb;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 1px rgba(37,99,235,0.13),
+                        0 0 0 4px rgba(191,219,254,0.7);
+            background: #ffffff;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 4px;
+            padding: 10px;
+            border-radius: 999px;
+            border: none;
+            background: linear-gradient(135deg, #1d4ed8, #0ea5e9);
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(37,99,235,0.45);
+        }
+
+        .error-box {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+            border-radius: 12px;
+            padding: 8px 10px;
+            font-size: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .footer-card {
+            margin-top: 12px;
+            font-size: 11px;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        @media (max-width: 880px) {
+            .shell {
+                max-width: 480px;
+                grid-template-columns: minmax(0, 1fr);
+            }
+            .hero {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="shell">
+
+    <!-- Panel izquierdo -->
+    <section class="hero">
+        <div class="hero-badge">
+            🔐 Verificación de Identidad
+        </div>
+        <h1 class="hero-title">Autenticación en 2 pasos</h1>
+        <p class="hero-subtitle">
+            Para proteger la información clínica y operativa del CESFAM,
+            el sistema requiere un código adicional enviado a tu correo electrónico.
+        </p>
+
+        <div class="hero-grid">
+            <div class="hero-pill">✅ Prevención de accesos no autorizados</div>
+            <div class="hero-pill">✅ Protección de datos sensibles</div>
+            <div class="hero-pill">✅ Cumplimiento de estándares de seguridad</div>
+            <div class="hero-pill">✅ Accesos con trazabilidad</div>
+        </div>
+
+        <div class="hero-foot">
+            Sistema REM CESFAM · Seguridad reforzada.
+        </div>
+    </section>
+
+    <!-- Panel derecho -->
+    <section class="card-wrap">
+        <div class="card">
+            <div class="card-inner">
+
+                <div class="card-header">
+                    <div>
+                        <h2 class="card-title">Verificación en 2 pasos</h2>
+                        <p class="card-subtitle">
+                            Ingresa el código recibido en tu correo.
+                        </p>
+                    </div>
+                    <span class="pill-env">2FA activo</span>
+                </div>
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="error-box">
+                            ⚠️ {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="field">
+                        <label>Código de verificación</label>
+                        <input type="text" name="codigo" placeholder="Ej: 483920">
+                    </div>
+
+                    <button type="submit">Validar código</button>
+
+                    <!-- Botón para reenviar el código 2FA -->
+                    <button
+                        type="submit"
+                        name="generar_nuevo_codigo"
+                        style="
+                            margin-top: 10px;
+                            background: #f1f5f9;
+                            color: #1e293b;
+                            box-shadow: none;
+                            border: 1px solid #cbd5e1;
+                        "
+                    >
+                        Reenviar código
+                    </button>
+                </form>
+
+                <div class="footer-card">
+                    El código tiene validez temporal por seguridad.
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+</div>
+</body>
+</html>

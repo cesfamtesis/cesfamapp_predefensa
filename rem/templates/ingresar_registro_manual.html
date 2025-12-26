@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <title>Ingreso manual {{ hoja }} / Sección {{ seccion }}</title>
+    <link rel="icon" href="{% static 'favicon/rem_favicon.ico' %}">
+    <link rel="shortcut icon" href="{% static 'favicon/rem_favicon.ico' %}">
+    <style>
+        :root {
+            --bg-body: #f3f4f6;
+            --bg-card: #ffffff;
+            --bg-header: #ffffff;
+            --bg-table-head: #f3f4f6;
+            --bg-table-data: #fffce8;   /* amarillo suave tipo REM */
+            --border-soft: #d1d5db;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --accent: #2563eb;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            background: var(--bg-body);
+            color: var(--text-main);
+        }
+
+        /* HEADER SUPERIOR */
+        header {
+            background: var(--bg-header);
+            padding: 16px 24px;
+            box-shadow: 0 1px 4px rgba(15, 23, 42, 0.10);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        header a {
+            text-decoration: none;
+            font-size: 14px;
+            color: #2563eb;
+        }
+
+        header a:hover {
+            text-decoration: underline;
+        }
+
+        .container {
+            max-width: 100%;
+            width: 100%;
+            margin: 18px auto 32px;
+            padding: 0 24px;
+        }
+
+        .periodo-info {
+            font-size: 14px;
+            margin: 0 0 4px;
+        }
+
+        .hint {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin: 0 0 12px;
+        }
+
+        /* ✅ AVISO (NUEVO) */
+        .alert-info {
+            margin: 12px 0 16px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(37, 99, 235, 0.35);
+            background: rgba(37, 99, 235, 0.08);
+            color: #0f172a;
+            font-size: 13px;
+        }
+
+        /* TABLA TIPO REM */
+        .table-wrapper {
+            margin-top: 8px;
+            background: var(--bg-card);
+            border-radius: 12px;
+            box-shadow: 0 1px 4px rgba(15,23,42,0.08);
+            padding: 8px;
+
+            /* <<< CAMBIO IMPORTANTE >>> */
+            height: auto;
+            max-height: none;       /* sin límite de alto */
+            overflow-x: auto;       /* solo scroll horizontal */
+            overflow-y: visible;    /* sin scroll vertical interno */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: var(--bg-table-head);
+        }
+
+        th, td {
+            padding: 4px 6px;
+            border: 1px solid var(--border-soft);
+            font-size: 11px;
+            word-wrap: break-word;
+            white-space: normal;
+        }
+
+        th {
+            text-align: center;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .header-group-row th {
+            font-size: 11px;
+            background: #e5e7eb;
+        }
+
+        tbody tr {
+            background: var(--bg-table-data);
+        }
+
+        .cell-text { text-align: left; }
+        .cell-num  { text-align: right; }
+
+        .cell-input {
+            width: 100%;
+            padding: 4px 6px;
+            border-radius: 4px;
+            border: 1px solid #d1d5db;
+            font-size: 11px;
+        }
+
+        .cell-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 1px rgba(37,99,235,0.3);
+        }
+
+        .actions {
+            margin-top: 12px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            border: 1px solid var(--accent);
+            color: #1d4ed8;
+            background: #eff6ff;
+            cursor: pointer;
+            transition: background 0.12s ease, color 0.12s ease, transform 0.05s ease;
+        }
+
+        .btn:hover {
+            background: #1d4ed8;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            border-color: #9ca3af;
+            color: #374151;
+            background: #e5e7eb;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Ingreso manual: {{ hoja }} / Sección {{ seccion }}</h1>
+    <a href="{% url 'lista_periodos' %}">⬅ Volver a períodos</a>
+</header>
+
+<div class="container">
+    <p class="periodo-info">
+        Período:
+        <strong>{{ periodo.anio }}-{{ periodo.mes|add:"0"|slice:"-2" }}</strong>
+        — {{ periodo.descripcion }}
+    </p>
+    <p class="hint">
+        Complete los valores para la tabla REM
+        (estructura idéntica a la planilla Excel oficial).
+    </p>
+
+    <!-- ✅ AVISO (NUEVO) -->
+    {% if hay_datos %}
+        <div class="alert-info">
+            <strong>Aviso</strong><br><br>
+            Ya existen registros ingresados manualmente para este período,
+            hoja <strong>{{ hoja }}</strong> / sección <strong>{{ seccion }}</strong>.<br><br>
+            Este formulario muestra la estructura base del REM. Para revisar los datos existentes,
+            utilice el módulo de reportes o la opción “ver registros”.
+        </div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                {% if hoja == "A01" and seccion == "A" %}
+                    <!-- CABECERA ESPECIAL A01 / A IGUAL A LA VISTA DE REPORTES -->
+                    <tr class="header-group-row">
+                        <th class="cell-text" rowspan="2">TIPO DE CONTROL</th>
+                        <th class="cell-text" rowspan="2">PROFESIONAL</th>
+                        <th class="cell-num"  rowspan="2">TOTAL</th>
+
+                        <th colspan="17">RANGO ETARIO</th>
+                        <th colspan="2">SEXO</th>
+
+                        <th rowspan="2">Control con pareja, familiar u otro</th>
+                        <th rowspan="2">Control de diada con presencia del padre</th>
+                        <th rowspan="2">Espacios Amigables/ Adolescentes</th>
+                        <th rowspan="2">Niños, Niñas, Adolescentes y Jóvenes SENAME</th>
+                        <th rowspan="2">Niños, Niñas, Adolescentes y Jóvenes Mejor Niñez</th>
+                        <th rowspan="2">Pueblos Originarios</th>
+                        <th rowspan="2">Migrantes</th>
+                        <th rowspan="2">Personas con discapacidad</th>
+
+                        <th colspan="3">Identificación de género</th>
+                        <th rowspan="2">Adolescente acude a control MAC con pareja</th>
+                    </tr>
+                    <tr>
+                        <th>Menos de 4 años</th>
+                        <th>5 - 9 años</th>
+                        <th>10 - 14 años</th>
+                        <th>15 - 19 años</th>
+                        <th>20 - 24 años</th>
+                        <th>25 - 29 años</th>
+                        <th>30 - 34 años</th>
+                        <th>35 - 39 años</th>
+                        <th>40 - 44 años</th>
+                        <th>45 - 49 años</th>
+                        <th>50 - 54 años</th>
+                        <th>55 - 59 años</th>
+                        <th>60 - 64 años</th>
+                        <th>65 - 69 años</th>
+                        <th>70 - 74 años</th>
+                        <th>75 - 79 años</th>
+                        <th>80 y más años</th>
+
+                        <th>Hombres</th>
+                        <th>Mujeres</th>
+
+                        <th>Trans masculino</th>
+                        <th>Trans femenina</th>
+                        <th>No binarie</th>
+                    </tr>
+                {% else %}
+                    <!-- CABECERA GENÉRICA PARA CUALQUIER OTRO REM -->
+                    <tr class="header-group-row">
+                        {% for col in columnas %}
+                            <th>{{ col|title }}</th>
+                        {% endfor %}
+                    </tr>
+                {% endif %}
+                </thead>
+
+                <tbody>
+                {% if hoja == "A01" and seccion == "A" and filas_fijas %}
+                    {# A01 / A: varias filas fijas, dos primeras columnas sin input #}
+                    {% for fila in filas_fijas %}
+                        <tr>
+                            <!-- TIPO DE CONTROL: solo se muestra cuando cambia -->
+                            <td class="cell-text">
+                                {% ifchanged fila.0 %}
+                                    {{ fila.0 }}
+                                {% endifchanged %}
+                            </td>
+                            <!-- PROFESIONAL -->
+                            <td class="cell-text">{{ fila.1 }}</td>
+
+                            {# resto de columnas, empezando en la tercera (TOTAL, rangos, etc.) #}
+                            {% for col in columnas|slice:"2:" %}
+                                <td class="cell-num">
+                                    <input
+                                        type="text"
+                                        name="{{ col }}__{{ forloop.parentloop.counter0 }}"
+                                        class="cell-input">
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    {# Caso genérico: una sola fila editable con todos los campos #}
+                    <tr>
+                        {% for col in columnas %}
+                            <td class="{% if forloop.counter0 < 3 %}cell-text{% else %}cell-num{% endif %}">
+                                <input type="text" name="{{ col }}" class="cell-input">
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="actions">
+            <button type="submit" class="btn">💾 Guardar registro</button>
+            <a href="{% url 'lista_periodos' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+</body>
+</html>

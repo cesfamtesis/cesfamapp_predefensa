@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <title>Reporte A01 – Sección A</title>
+    <link rel="icon" href="{% static 'favicon/rem_favicon.ico' %}">
+    <link rel="shortcut icon" href="{% static 'favicon/rem_favicon.ico' %}">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            background: #020617;
+            color: #e5e7eb;
+        }
+        header {
+            padding: 20px 32px;
+            background: #020617;
+            border-bottom: 1px solid #1f2937;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 600;
+        }
+        header p {
+            margin: 4px 0 0;
+            font-size: 13px;
+            color: #9ca3af;
+        }
+        main {
+            max-width: 1100px;
+            margin: 24px auto 40px;
+            padding: 0 16px;
+        }
+        a.back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #9ca3af;
+            text-decoration: none;
+            margin-bottom: 16px;
+        }
+        a.back-link:hover { color: #e5e7eb; }
+
+        /* Tarjetas KPI */
+        .cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .card {
+            flex: 1;
+            min-width: 200px;
+            padding: 14px 16px;
+            border-radius: 14px;
+            background: radial-gradient(circle at top left, #0f172a, #020617);
+            border: 1px solid #1f2937;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.6);
+        }
+        .card .title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: #9ca3af;
+            margin-bottom: 4px;
+        }
+        .card .value {
+            font-size: 22px;
+            font-weight: 600;
+            color: #f9fafb;
+        }
+
+        /* Alertas */
+        .alert-box {
+            margin-top: 12px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+        }
+        .alert-info {
+            border: 1px solid #38bdf8;
+            background: rgba(56,189,248,0.15);
+            color: #e0f2fe;
+        }
+        .alert-danger {
+            border: 1px solid #fecaca;
+            background: rgba(239,68,68,0.15);
+            color: #fecaca;
+        }
+        .alert-box ul {
+            margin: 6px 0 0 18px;
+            padding: 0;
+        }
+
+        /* Botones */
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 7px 14px;
+            border-radius: 999px;
+            font-size: 13px;
+            text-decoration: none;
+            border: 1px solid #3b82f6;
+            background: #2563eb;
+            color: #e5e7eb;
+        }
+        .btn-primary:hover { background: #1d4ed8; }
+
+        /* Gráficos */
+        .charts {
+            margin-top: 24px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        .chart-card {
+            padding: 16px 18px;
+            border-radius: 16px;
+            background: #020617;
+            border: 1px solid #1f2937;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.5);
+        }
+        .chart-title {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: #9ca3af;
+            margin-bottom: 10px;
+        }
+        .bar-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .bar-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+        .bar-label {
+            flex: 0 0 130px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .bar-track {
+            flex: 1;
+            height: 8px;
+            border-radius: 999px;
+            background: #111827;
+            overflow: hidden;
+        }
+        .bar-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #38bdf8, #22c55e);
+        }
+        .bar-value {
+            width: 40px;
+            text-align: right;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Reporte A01 – Sección A</h1>
+    <p>Período {{ periodo.mes }}/{{ periodo.anio }} – Controles de salud sexual y reproductiva.</p>
+</header>
+
+<main>
+
+    <a href="{% url 'reportes_home' %}" class="back-link">
+        ⬅ Volver a reportes
+    </a>
+
+    <!-- CONTEXTO DEL ARCHIVO -->
+    <div class="alert-box alert-info">
+        <strong>Contexto del archivo procesado</strong><br><br>
+        El archivo REM asociado a este período fue entregado por el CESFAM
+        con fines demostrativos, por lo que presenta datos incompletos
+        y rangos etarios sin registros.
+        <br><br>
+        Las alertas mostradas corresponden a validaciones automáticas
+        del sistema y no representan inconsistencias operativas reales.
+    </div>
+
+    <!-- KPIs -->
+    <div class="cards">
+        <div class="card">
+            <div class="title">Total de controles</div>
+            <div class="value">{{ resumen.total_controles }}</div>
+        </div>
+        <div class="card">
+            <div class="title">Tipos de control</div>
+            <div class="value">{{ resumen.num_tipos_control }}</div>
+        </div>
+        <div class="card">
+            <div class="title">Profesionales</div>
+            <div class="value">{{ resumen.num_profesionales }}</div>
+        </div>
+        <div class="card">
+            <div class="title">Rango etario más atendido</div>
+            <div class="value" style="font-size:15px;">
+                {{ resumen.rango_top }}
+            </div>
+        </div>
+    </div>
+
+    <!-- ALERTAS TÉCNICAS -->
+    {% if resumen.alertas %}
+        <div class="alert-box alert-danger">
+            <strong>Alertas del período (validaciones automáticas):</strong>
+            <ul>
+                {% for a in resumen.alertas %}
+                    <li>{{ a }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <!-- GRÁFICOS -->
+    <section class="charts">
+        <div class="chart-card">
+            <div class="chart-title">Distribución por tipo de control</div>
+            {% if tipos_chart %}
+                <ul class="bar-list">
+                    {% for item in tipos_chart %}
+                        <li class="bar-item">
+                            <span class="bar-label">{{ item.nombre }}</span>
+                            <div class="bar-track">
+                                <div class="bar-fill" style="width: {{ item.porcentaje }}%;"></div>
+                            </div>
+                            <span class="bar-value">{{ item.valor }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="chart-empty">No hay registros para este período.</p>
+            {% endif %}
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-title">Distribución por profesional</div>
+            {% if profesionales_chart %}
+                <ul class="bar-list">
+                    {% for item in profesionales_chart %}
+                        <li class="bar-item">
+                            <span class="bar-label">{{ item.nombre }}</span>
+                            <div class="bar-track">
+                                <div class="bar-fill" style="width: {{ item.porcentaje }}%;"></div>
+                            </div>
+                            <span class="bar-value">{{ item.valor }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="chart-empty">No hay registros para este período.</p>
+            {% endif %}
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-title">Distribución por rango etario</div>
+            {% if rangos_chart %}
+                <ul class="bar-list">
+                    {% for item in rangos_chart %}
+                        <li class="bar-item">
+                            <span class="bar-label">{{ item.nombre }}</span>
+                            <div class="bar-track">
+                                <div class="bar-fill" style="width: {{ item.porcentaje }}%;"></div>
+                            </div>
+                            <span class="bar-value">{{ item.valor }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="chart-empty">No hay registros para este período.</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <div class="actions" style="margin-top:24px;">
+        <a href="{% url 'ver_detalle_rem' periodo.id_periodo 'A01' 'A' %}" class="btn-primary">
+            Ver tabla detallada A01 – Sección A
+        </a>
+    </div>
+
+</main>
+
+</body>
+</html>

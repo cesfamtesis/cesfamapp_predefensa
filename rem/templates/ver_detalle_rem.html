@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <title>
+        REM {{ hoja }} – Sección {{ seccion }} · {{ periodo.anio }}-{{ periodo.mes|add:"0"|slice:"-2" }}
+    </title>
+    <link rel="icon" href="{% static 'favicon/rem_favicon.ico' %}">
+    <link rel="shortcut icon" href="{% static 'favicon/rem_favicon.ico' %}">
+    <style>
+        :root {
+            --bg-body: #f3f4f6;
+            --bg-card: #ffffff;
+            --bg-header: #0b3b77;
+            --bg-table-head: #f3f4f6;
+            --bg-table-data: #fffce8;
+            --border-soft: #d1d5db;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --accent: #2563eb;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            background: var(--bg-body);
+            color: var(--text-main);
+        }
+
+        /* ===== HEADER SUPERIOR ===== */
+
+        header {
+            background: var(--bg-header);
+            padding: 14px 24px;
+            box-shadow: 0 1px 6px rgba(15, 23, 42, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #e5e7eb;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        header h1 span {
+            font-size: 22px;
+        }
+
+        header a {
+            text-decoration: none;
+            font-size: 13px;
+            color: #bfdbfe;
+        }
+
+        header a:hover {
+            text-decoration: underline;
+        }
+
+        .container {
+            max-width: 100%;
+            width: 100%;
+            margin: 18px auto 32px;
+            padding: 0 24px;
+        }
+
+        /* ===== PANEL RESUMEN ===== */
+
+        .info-panel {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 10px 16px;
+            box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+            margin-bottom: 14px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .info-panel strong {
+            color: var(--text-main);
+        }
+
+        .info-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 24px;
+            margin-top: 6px;
+        }
+
+        .info-item span {
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            color: #9ca3af;
+        }
+
+        .rem-title {
+            margin-top: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #e0f2fe;
+            color: #0369a1;
+            border-radius: 999px;
+            padding: 2px 10px;
+            font-size: 11px;
+            margin-left: 4px;
+            text-transform: uppercase;
+            letter-spacing: .03em;
+        }
+
+        /* ===== BOTONES DE ACCIÓN (EXPORTAR) ===== */
+        .actions-bar {
+            margin: 8px 0 16px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .btn-export {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--border-soft);
+            background: #f9fafb;
+            font-size: 12px;
+            text-decoration: none;
+            color: var(--text-main);
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        .btn-export:hover {
+            background: #e5e7eb;
+        }
+
+        /* ===== TABLA ===== */
+
+        .table-wrapper {
+            margin-top: 8px;
+            background: var(--bg-card);
+            border-radius: 12px;
+            box-shadow: 0 1px 4px rgba(15,23,42,0.08);
+            padding: 8px;
+            overflow-x: auto;   /* solo scroll horizontal si la tabla es muy ancha */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: var(--bg-table-head);
+        }
+
+        th, td {
+            padding: 4px 6px;
+            border: 1px solid var(--border-soft);
+            font-size: 11px;
+            word-wrap: break-word;
+            white-space: normal;
+        }
+
+        th {
+            text-align: center;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        thead th {
+            position: sticky;
+            top: 0;
+            z-index: 3;
+        }
+
+        .header-group-row th {
+            font-size: 11px;
+            background: #e5e7eb;
+        }
+
+        tbody tr:nth-child(odd) {
+            background: var(--bg-table-data);
+        }
+
+        tbody tr:nth-child(even) {
+            background: #fffaf0;
+        }
+
+        tbody tr:hover {
+            background: #fef3c7;
+        }
+
+        .cell-num  { text-align: right; }
+        .cell-text { text-align: left; }
+
+        .row-total td {
+            font-weight: 600;
+            background: #e5e7eb;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 24px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        /* ========= CONFIG HOJA PARA PDF ========= */
+        @page {
+            size: A4 landscape;
+            margin: 10mm 5mm 10mm 5mm;
+        }
+
+        @media print {
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+            }
+
+            header,
+            .actions-bar,
+            .no-print {
+                display: none !important;
+            }
+
+            .container {
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 4mm !important;
+            }
+
+            .table-wrapper {
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                padding: 0 !important;
+                overflow: visible !important;
+            }
+
+            table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                font-size: 8px !important;
+            }
+
+            th, td {
+                border: 1px solid #000 !important;
+                padding: 1px 2px !important;
+            }
+
+            thead th {
+                position: static !important;
+                top: auto !important;
+                z-index: auto !important;
+            }
+
+            thead {
+                display: table-header-group !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>
+        <span>📊</span>
+        REM {{ hoja }} – Sección {{ seccion }}
+    </h1>
+
+    <a href="{% url 'ver_datos_rem_periodo' periodo.id_periodo %}">
+        ⬅ Volver a datos REM del período
+    </a>
+</header>
+
+<div class="container">
+
+    <!-- INFO PERIODO / HOJA / SECCION -->
+    <div class="info-panel">
+        <div>
+            <strong>Período:</strong>
+            {{ periodo.anio }}-{{ periodo.mes|add:"0"|slice:"-2" }}
+            · {{ periodo.descripcion }}
+        </div>
+        <div class="info-grid">
+            <div class="info-item">
+                <span>REM</span>
+                <strong>{{ hoja }}</strong>
+            </div>
+            <div class="info-item">
+                <span>Sección</span>
+                <strong>{{ seccion }}</strong>
+            </div>
+        </div>
+        {% if titulo_hoja or titulo_seccion %}
+            <div class="rem-title">
+                {% if titulo_hoja %}{{ titulo_hoja }}{% endif %}
+                {% if titulo_seccion %} – {{ titulo_seccion }}{% endif %}
+            </div>
+        {% endif %}
+    </div>
+
+    {# BOTONES DE EXPORTAR SOLO PARA A01 / A #}
+    {% if hoja == "A01" and seccion == "A" %}
+        <div class="actions-bar no-print">
+            <a href="{% url 'exportar_a01_seccion_a_excel' periodo.id_periodo %}" class="btn-export">
+                ⬇ Exportar tabla A01-A a Excel
+            </a>
+            <button type="button" class="btn-export" onclick="window.print()">
+                🖨 Imprimir / Guardar como PDF
+            </button>
+        </div>
+    {% endif %}
+
+    {% if filas_tabla %}
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                {# CABECERA ESPECIAL PARA REM A01 / SECCIÓN A #}
+                {% if hoja == "A01" and seccion == "A" %}
+                    <tr class="header-group-row">
+                        <th class="cell-text" rowspan="2">TIPO DE CONTROL</th>
+                        <th class="cell-text" rowspan="2">PROFESIONAL</th>
+                        <th class="cell-num"  rowspan="2">TOTAL</th>
+
+                        <th colspan="17">RANGO ETARIO</th>
+                        <th colspan="2">SEXO</th>
+
+                        <th rowspan="2">Control con pareja, familiar u otro</th>
+                        <th rowspan="2">Control de diada con presencia del padre</th>
+                        <th rowspan="2">Espacios Amigables/ Adolescentes</th>
+                        <th rowspan="2">Niños, Niñas, Adolescentes y Jóvenes SENAME</th>
+                        <th rowspan="2">Niños, Niñas, Adolescentes y Jóvenes Mejor Niñez</th>
+                        <th rowspan="2">Pueblos Originarios</th>
+                        <th rowspan="2">Migrantes</th>
+                        <th rowspan="2">Personas con discapacidad</th>
+
+                        <th colspan="3">Identificación de género</th>
+                        <th rowspan="2">Adolescente acude a control MAC con pareja</th>
+                    </tr>
+                    <tr>
+                        <th>Menos de 4 años</th>
+                        <th>5 - 9 años</th>
+                        <th>10 - 14 años</th>
+                        <th>15 - 19 años</th>
+                        <th>20 - 24 años</th>
+                        <th>25 - 29 años</th>
+                        <th>30 - 34 años</th>
+                        <th>35 - 39 años</th>
+                        <th>40 - 44 años</th>
+                        <th>45 - 49 años</th>
+                        <th>50 - 54 años</th>
+                        <th>55 - 59 años</th>
+                        <th>60 - 64 años</th>
+                        <th>65 - 69 años</th>
+                        <th>70 - 74 años</th>
+                        <th>75 - 79 años</th>
+                        <th>80 y más años</th>
+
+                        <th>Hombres</th>
+                        <th>Mujeres</th>
+
+                        <th>Trans masculino</th>
+                        <th>Trans femenina</th>
+                        <th>No binarie</th>
+                    </tr>
+
+                {# CABECERA ESPECIAL PARA REM A02 (todas las secciones) #}
+                {% elif hoja == "A02" %}
+                    <tr class="header-group-row">
+                        <th class="cell-text" rowspan="2">
+                            {% if seccion == "A" %}
+                                PROFESIONAL
+                            {% elif seccion == "B" %}
+                                ESTADO NUTRICIONAL
+                            {% elif seccion == "C" %}
+                                ESTADO DE SALUD
+                            {% elif seccion == "D" %}
+                                ESTADO DE SALUD (LABORATORIO)
+                            {% else %}
+                                DESCRIPCIÓN
+                            {% endif %}
+                        </th>
+
+                        <th colspan="3">TOTAL</th>
+
+                        <th colspan="2">15-19 años</th>
+                        <th colspan="2">20-24 años</th>
+                        <th colspan="2">25-29 años</th>
+                        <th colspan="2">30-34 años</th>
+                        <th colspan="2">35-39 años</th>
+                        <th colspan="2">40-44 años</th>
+                        <th colspan="2">45-49 años</th>
+                        <th colspan="2">50-54 años</th>
+                        <th colspan="2">55-59 años</th>
+                        <th colspan="2">60-64 años</th>
+                        <th colspan="2">65-69 años</th>
+                        <th colspan="2">70-74 años</th>
+                        <th colspan="2">75-79 años</th>
+                        <th colspan="2">80 y más años</th>
+
+                        <th rowspan="2">Pueblos originarios</th>
+                        <th rowspan="2">Migrantes</th>
+                    </tr>
+                    <tr>
+                        <th>Ambos sexos</th>
+                        <th>Hombres</th>
+                        <th>Mujeres</th>
+
+                        <th>Hombres</th>
+                        <th>Mujeres</th>
+                        <th>Hombres</th>
+                        <th>Mujeres</th>
+                        <th>Hombres</th>
+                        <th>Mujeres</th>
+                        <th>Hombres</th>
+                        <th>Mujeres</th>
+                        <th>Hombres</th>
+                        <th>Mujeres</th>
+                        <th>Hombres</th>
+                        <th>Mujeres</th>
+                        <th>Hombres</th>
+                        <th>Mujeres</th>
+                        <th>Hombres</th>
+                        <th>Mujeres</th>
+                        <th>Hombres</th>
+                        <th>Mujeres</th>
+                        <th>Hombres</th>
+                        <th>Mujeres</th>
+                        <th>Hombres</th>
+                        <th>Mujeres</th>
+                        <th>Hombres</th>
+                        <th>Mujeres</th>
+                        <th>Hombres</th>
+                        <th>Mujeres</th>
+                    </tr>
+
+                {# CABECERA GENÉRICA PARA OTROS REM / SECCIONES #}
+                {% else %}
+                    <tr class="header-group-row">
+                        <th colspan="{{ columnas_bonitas|length }}">VALORES REGISTRADOS</th>
+                    </tr>
+                    <tr>
+                        {% for col_bonita in columnas_bonitas %}
+                            {% if forloop.counter0 < num_desc_cols %}
+                                <th class="cell-text">{{ col_bonita }}</th>
+                            {% else %}
+                                <th>{{ col_bonita }}</th>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                {% endif %}
+                </thead>
+
+                <tbody>
+                {% if hoja == "A01" and seccion == "A" %}
+                    {% for fila in filas_tabla %}
+                        <tr{% if fila.es_total %} class="row-total"{% endif %}>
+                            <td class="cell-text">
+                                {% with valor=fila.celdas.0 %}
+                                    {% if valor and valor != "-" %}
+                                        {{ valor }}
+                                    {% endif %}
+                                {% endwith %}
+                            </td>
+                            <td class="cell-text">
+                                {% with valor=fila.celdas.1 %}
+                                    {% if valor and valor != "-" %}
+                                        {{ valor }}
+                                    {% endif %}
+                                {% endwith %}
+                            </td>
+                            <td class="cell-num">
+                                {% if fila.celdas.2 is not None %}
+                                    {{ fila.celdas.2 }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+
+                            <!-- Rango etario (17 columnas) -->
+                            <td class="cell-num">{{ fila.celdas.3|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.4|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.5|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.6|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.7|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.8|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.9|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.10|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.11|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.12|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.13|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.14|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.15|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.16|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.17|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.18|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.19|default:"-" }}</td>
+
+                            <!-- Sexo -->
+                            <td class="cell-num">{{ fila.celdas.20|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.21|default:"-" }}</td>
+
+                            <!-- Otras columnas -->
+                            <td class="cell-num">{{ fila.celdas.22|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.23|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.24|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.25|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.26|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.27|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.28|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.29|default:"-" }}</td>
+
+                            <!-- Identificación de género -->
+                            <td class="cell-num">{{ fila.celdas.30|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.31|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.32|default:"-" }}</td>
+
+                            <!-- Adolescente acude a control MAC con pareja -->
+                            <td class="cell-num">{{ fila.celdas.33|default:"-" }}</td>
+                        </tr>
+                    {% endfor %}
+
+                {% elif hoja == "A02" %}
+                    {% for fila in filas_tabla %}
+                        <tr{% if fila.es_total %} class="row-total"{% endif %}>
+                            <!-- Columna descriptiva -->
+                            <td class="cell-text">
+                                {% with valor=fila.celdas.0 %}
+                                    {% if valor and valor != "-" %}
+                                        {{ valor }}
+                                    {% endif %}
+                                {% endwith %}
+                            </td>
+
+                            <!-- TOTAL (Ambos sexos, Hombres, Mujeres) -->
+                            <td class="cell-num">{{ fila.celdas.1|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.2|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.3|default:"-" }}</td>
+
+                            <!-- Rangos etarios 15-19 a 80+ (H / M) -->
+                            <td class="cell-num">{{ fila.celdas.4|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.5|default:"-" }}</td>
+
+                            <td class="cell-num">{{ fila.celdas.6|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.7|default:"-" }}</td>
+
+                            <td class="cell-num">{{ fila.celdas.8|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.9|default:"-" }}</td>
+
+                            <td class="cell-num">{{ fila.celdas.10|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.11|default:"-" }}</td>
+
+                            <td class="cell-num">{{ fila.celdas.12|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.13|default:"-" }}</td>
+
+                            <td class="cell-num">{{ fila.celdas.14|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.15|default:"-" }}</td>
+
+                            <td class="cell-num">{{ fila.celdas.16|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.17|default:"-" }}</td>
+
+                            <td class="cell-num">{{ fila.celdas.18|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.19|default:"-" }}</td>
+
+                            <td class="cell-num">{{ fila.celdas.20|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.21|default:"-" }}</td>
+
+                            <td class="cell-num">{{ fila.celdas.22|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.23|default:"-" }}</td>
+
+                            <td class="cell-num">{{ fila.celdas.24|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.25|default:"-" }}</td>
+
+                            <td class="cell-num">{{ fila.celdas.26|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.27|default:"-" }}</td>
+
+                            <td class="cell-num">{{ fila.celdas.28|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.29|default:"-" }}</td>
+
+                            <td class="cell-num">{{ fila.celdas.30|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.31|default:"-" }}</td>
+
+                            <!-- Pueblos originarios / Migrantes -->
+                            <td class="cell-num">{{ fila.celdas.32|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.33|default:"-" }}</td>
+                        </tr>
+                    {% endfor %}
+
+                {% else %}
+                    {% for fila in filas_tabla %}
+                        <tr{% if fila.es_total %} class="row-total"{% endif %}>
+                            {% for celda in fila.celdas %}
+                                {% if forloop.counter0 < num_desc_cols %}
+                                    <td class="cell-text">
+                                        {% if celda and celda != "-" %}
+                                            {{ celda }}
+                                        {% endif %}
+                                    </td>
+                                {% else %}
+                                    <td class="cell-num">
+                                        {% if celda is not None %}
+                                            {{ celda }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty">
+            No hay registros para este REM / Sección en el período seleccionado.
+        </div>
+    {% endif %}
+
+</div>
+
+</body>
+</html>

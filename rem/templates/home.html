@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <title>Inicio · Sistema REM CESFAM</title>
+
+    <!-- Ícono institucional del sistema -->
+    <link rel="icon" href="{% static 'favicon/rem_favicon.ico' %}">
+    <link rel="shortcut icon" href="{% static 'favicon/rem_favicon.ico' %}">
+
+    <style>
+        /* 
+        =========================================================
+        VARIABLES DE ESTILO
+        Se definen variables CSS para permitir modo claro y oscuro
+        sin duplicar estilos en toda la hoja.
+        =========================================================
+        */
+
+        :root {
+            --primary: #1d4ed8;
+            --primary-light: #3b82f6;
+            --bg: #f1f5f9;
+            --header-bg: linear-gradient(135deg, #1d4ed8, #0ea5e9);
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --card-bg: #ffffff;
+            --card-shadow: rgba(15,23,42,0.14);
+            --footer-text: #64748b;
+        }
+
+        body.dark {
+            --bg: #0f172a;
+            --header-bg: linear-gradient(135deg, #0b1120, #1e293b);
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --card-bg: #1e293b;
+            --card-shadow: rgba(0,0,0,0.5);
+            --footer-text: #94a3b8;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            color: var(--text-main);
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* =============================
+           HEADER
+           Muestra el nombre del sistema,
+           usuario autenticado y controles
+        ============================== */
+        header {
+            background: var(--header-bg);
+            padding: 18px 28px;
+            color: white;
+            box-shadow: 0 2px 15px rgba(0,0,0,.25);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left h1 {
+            margin: 0;
+            font-size: 26px;
+            font-weight: 700;
+        }
+
+        .header-left p {
+            margin: 4px 0 0;
+            font-size: 14px;
+            opacity: .85;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .username-label {
+            font-size: 14px;
+            background: rgba(255,255,255,0.15);
+            padding: 6px 12px;
+            border-radius: 999px;
+        }
+
+        .toggle-btn, .logout-btn {
+            border: 1px solid rgba(255,255,255,0.4);
+            padding: 7px 14px;
+            border-radius: 999px;
+            cursor: pointer;
+            background: rgba(255,255,255,0.15);
+            color: white;
+            font-size: 14px;
+        }
+
+        .logout-btn {
+            text-decoration: none;
+        }
+
+        /* =============================
+           CONTENEDOR PRINCIPAL
+        ============================== */
+        .container {
+            max-width: 1250px;
+            margin: 34px auto 40px;
+            padding: 0 20px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        /* =============================
+           GRID DE MÓDULOS
+           Cada tarjeta representa
+           un módulo funcional del sistema
+        ============================== */
+        .grid {
+            display: grid;
+            gap: 22px;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: 0 8px 20px var(--card-shadow);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card-icon {
+            font-size: 34px;
+            margin-bottom: 10px;
+        }
+
+        .card-title {
+            font-size: 19px;
+            font-weight: 600;
+        }
+
+        .card-text {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .card a {
+            font-size: 14px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            text-decoration: none;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        footer {
+            text-align: center;
+            font-size: 12px;
+            color: var(--footer-text);
+            margin-top: 40px;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- =====================================================
+     HEADER PRINCIPAL
+     ===================================================== -->
+<header>
+    <div class="header-left">
+        <h1>📊 Sistema REM – CESFAM Ultraestación</h1>
+        <p>Gestión, consolidación y trazabilidad completa de datos REM.</p>
+    </div>
+
+    <div class="header-right">
+        <!-- Usuario autenticado -->
+        <div class="username-label">👋 Hola, {{ request.user.username }}</div>
+
+        <!-- Cambio de tema claro/oscuro -->
+        <button class="toggle-btn" id="themeToggle">🌙 Modo oscuro</button>
+
+        <!-- Cierre de sesión -->
+        <a href="{% url 'accounts:logout' %}" class="logout-btn">🔒 Cerrar sesión</a>
+    </div>
+</header>
+
+<div class="container">
+
+    <h2 class="section-title">Módulos principales</h2>
+
+    <div class="grid">
+
+        <!-- MÓDULOS OPERATIVOS -->
+        <!-- Cada tarjeta corresponde a una funcionalidad principal del sistema -->
+
+        <div class="card">
+            <div>
+                <div class="card-icon">📤</div>
+                <h3 class="card-title">Subir archivo REM</h3>
+                <p class="card-text">
+                    Permite cargar planillas oficiales REM para su posterior validación y procesamiento.
+                </p>
+            </div>
+            <a href="{% url 'subir_excel' %}">Ir a carga de archivos</a>
+        </div>
+
+        <div class="card">
+            <div>
+                <div class="card-icon">📁</div>
+                <h3 class="card-title">Archivos cargados</h3>
+                <p class="card-text">
+                    Historial de archivos ingresados, con vista previa y ejecución del proceso ETL.
+                </p>
+            </div>
+            <a href="{% url 'lista_archivos' %}">Ver archivos</a>
+        </div>
+
+        <div class="card">
+            <div>
+                <div class="card-icon">🗂️</div>
+                <h3 class="card-title">Períodos disponibles</h3>
+                <p class="card-text">
+                    Gestión y consulta de períodos mensuales utilizados para la consolidación REM.
+                </p>
+            </div>
+            <a href="{% url 'lista_periodos' %}">Ver períodos</a>
+        </div>
+
+        <!-- =====================================================
+             MÓDULOS ADMINISTRATIVOS
+             Visibles solo para usuarios con rol administrador
+             ===================================================== -->
+        {% if request.user.is_staff or request.user.is_superuser %}
+
+        <div class="card">
+            <div>
+                <div class="card-icon">⚙️</div>
+                <h3 class="card-title">Administración</h3>
+                <p class="card-text">
+                    Gestión de usuarios, permisos, catálogos y configuración del sistema.
+                </p>
+            </div>
+            <a href="/admin/">Abrir panel admin</a>
+        </div>
+
+        <div class="card">
+            <div>
+                <div class="card-icon">📝</div>
+                <h3 class="card-title">Bitácora de Auditoría</h3>
+                <p class="card-text">
+                    Registro de acciones realizadas por los usuarios para asegurar trazabilidad.
+                </p>
+            </div>
+            <a href="{% url 'lista_auditoria' %}">Ver auditoría</a>
+        </div>
+
+        <!-- =====================================================
+             MÓDULO DE RESPALDO (NUEVO)
+             Este módulo permite ejecutar respaldos manuales
+             y visualizar su historial. Forma parte del plan
+             de continuidad operativa definido en la tesis.
+             ===================================================== -->
+        <div class="card">
+            <div>
+                <div class="card-icon">🗄️</div>
+                <h3 class="card-title">Respaldos del sistema</h3>
+                <p class="card-text">
+                    Ejecución manual y registro de respaldos de la base de datos PostgreSQL.
+                </p>
+            </div>
+            <a href="{% url 'backup_view' %}">Administrar respaldos</a>
+        </div>
+
+        {% endif %}
+
+        <!-- REPORTES -->
+        <div class="card">
+            <div>
+                <div class="card-icon">📈</div>
+                <h3 class="card-title">Reportes</h3>
+                <p class="card-text">
+                    Visualización de indicadores y reportes consolidados REM.
+                </p>
+            </div>
+            <a href="{% url 'reportes_home' %}">Ir a reportes</a>
+        </div>
+
+        <div class="card">
+    <div>
+        <div class="card-icon">🧩</div>
+        <h3 class="card-title">Cambiar encabezados</h3>
+        <p class="card-text">
+            Gestión de encabezados de planillas REM.
+            <br>
+            <em>(Módulo en desarrollo)</em>
+        </p>
+    </div>
+
+    <a href="#" onclick="return false;" style="opacity:0.6; cursor:not-allowed;">
+        En desarrollo
+    </a>
+</div>
+
+
+    </div>
+</div>
+
+<footer>
+    Proyecto de Titulación — Ingeniería en Informática · CESFAM Ultraestación “Dr. Raúl Martínez González”
+</footer>
+
+<script>
+    const body = document.body;
+    const btn = document.getElementById("themeToggle");
+
+    // Aplica el tema guardado previamente
+    if (localStorage.getItem("theme") === "dark") {
+        body.classList.add("dark");
+        btn.textContent = "☀️ Modo claro";
+    }
+
+    // Alterna entre modo claro y oscuro
+    btn.addEventListener("click", () => {
+        body.classList.toggle("dark");
+
+        if (body.classList.contains("dark")) {
+            localStorage.setItem("theme", "dark");
+            btn.textContent = "☀️ Modo claro";
+        } else {
+            localStorage.setItem("theme", "light");
+            btn.textContent = "🌙 Modo oscuro";
+        }
+    });
+</script>
+
+</body>
+</html>

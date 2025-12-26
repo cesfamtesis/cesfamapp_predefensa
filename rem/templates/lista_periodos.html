@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <title>Listado de Períodos</title>
+    <link rel="icon" href="{% static 'favicon/rem_favicon.ico' %}">
+    <link rel="shortcut icon" href="{% static 'favicon/rem_favicon.ico' %}">
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            background: #f3f4f6;
+            color: #111827;
+        }
+
+        /* HEADER */
+        header {
+            background: #ffffff;
+            padding: 16px 24px;
+            box-shadow: 0 1px 4px rgba(15, 23, 42, 0.10);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        header a {
+            text-decoration: none;
+            font-size: 14px;
+            color: #2563eb;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 24px auto 40px;
+            padding: 0 16px;
+        }
+
+        h2 {
+            margin: 16px 0 8px;
+            font-size: 19px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 6px;
+        }
+
+        /* BOTONES */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 7px 14px;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            border: 1px solid transparent;
+            transition: 0.12s ease;
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #111827;
+            border-color: #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: #ffffff;
+            border-color: #1d4ed8;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-success {
+            background: #22c55e;
+            color: white;
+            border-color: #16a34a;
+        }
+
+        .btn-success:hover {
+            background: #16a34a;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+            border-color: #dc2626;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-accent {
+            background: #0ea5e9;
+            color: white;
+            border-color: #0284c7;
+        }
+
+        .btn-accent:hover {
+            background: #0284c7;
+        }
+
+        /* TABLA */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+            margin-top: 8px;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+        }
+
+        th {
+            background: #f1f5f9;
+            font-size: 13px;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .col-acciones { white-space: nowrap; }
+
+        .badge-inactivo {
+            background: #fee2e2;
+            color: #b91c1c;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            margin-left: 6px;
+        }
+
+        .top-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        /* ========= MODALES BONITOS ========= */
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            display: none;           /* se muestra con JS */
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .modal {
+            background: #ffffff;
+            padding: 24px 22px;
+            width: 360px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(15,23,42,0.25);
+            text-align: center;
+            animation: modal-pop 0.18s ease-out;
+        }
+
+        .modal h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .modal p {
+            font-size: 14px;
+            color: #4b5563;
+            margin: 8px 0 20px;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        @keyframes modal-pop {
+            from { transform: scale(0.9); opacity: 0; }
+            to   { transform: scale(1);   opacity: 1; }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<header>
+    <h1>📁 Lista de períodos</h1>
+    <a href="{% url 'home' %}">⬅ Volver al menú principal</a>
+</header>
+
+<div class="container">
+
+    <!-- ===========================
+         PERÍODOS ACTIVOS
+    ============================ -->
+    <h2>📆 Períodos registrados</h2>
+
+    <div class="top-actions">
+        <a href="{% url 'home' %}" class="btn btn-secondary">🏠 Inicio</a>
+        <a href="{% url 'crear_periodo' %}" class="btn btn-success">➕ Crear nuevo período</a>
+    </div>
+
+    <div class="subtitle">Períodos actualmente activos en el sistema.</div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Año</th>
+                <th>Mes</th>
+                <th>Descripción</th>
+                <th>Creado en</th>
+                <th class="col-acciones">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in periodos_activos %}
+            <tr>
+                <td>{{ p.id_periodo }}</td>
+                <td>{{ p.anio }}</td>
+                <td>{{ p.mes }}</td>
+                <td>{{ p.descripcion }}</td>
+                <td>{{ p.creado_en }}</td>
+                <td class="col-acciones">
+                    <!-- Editar -->
+                    <a href="{% url 'editar_periodo' p.id_periodo %}" class="btn btn-primary">✏ Editar</a>
+
+                    <!-- Eliminar = marcar INACTIVO (POST con modal) -->
+                    <form method="post"
+                          action="{% url 'eliminar_periodo' p.id_periodo %}"
+                          class="form-eliminar"
+                          style="display:inline;">
+                        {% csrf_token %}    
+                        <button type="submit" class="btn btn-danger">🗑 Eliminar</button>
+                    </form>
+                    <!-- NUEVO: botón genérico para ingreso manual -->
+                    <a href="{% url 'seleccionar_rem_periodo' p.id_periodo %}"
+                    class="btn btn-success"
+                    style="margin-left: 6px;">
+                        ➕ Ingresar datos REM
+                    </a>
+                    <a href="{% url 'ver_datos_rem_periodo'  p.id_periodo %}"
+                    class="btn btn-secondary btn-sm">
+                        👁 Ver datos REM
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6">No hay períodos activos.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- ===========================
+         PERÍODOS INACTIVOS
+    ============================ -->
+    <h2 style="margin-top: 32px;">📁 Períodos inactivos</h2>
+    <div class="subtitle">Registros marcados como inactivos (conservados por trazabilidad).</div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Año</th>
+                <th>Mes</th>
+                <th>Descripción</th>
+                <th>Creado en</th>
+                <th class="col-acciones">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in periodos_inactivos %}
+            <tr>
+                <td>{{ p.id_periodo }}</td>
+                <td>{{ p.anio }}</td>
+                <td>{{ p.mes }}</td>
+                <td>
+                    {{ p.descripcion }}
+                    <span class="badge-inactivo">INACTIVO</span>
+                </td>
+                <td>{{ p.creado_en }}</td>
+                <td class="col-acciones">
+                    <!-- Reactivar (POST con modal) -->
+                    <form method="post"
+                          action="{% url 'reactivar_periodo' p.id_periodo %}"
+                          class="form-reactivar"
+                          style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-accent">🔄 Reactivar</button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6">No hay períodos inactivos.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- BOTONES ABAJO -->
+    <div class="top-actions" style="margin-top: 24px;">
+        <a href="{% url 'lista_archivos' %}" class="btn btn-secondary">📄 Ver archivos REM</a>
+        <a href="{% url 'subir_excel' %}" class="btn btn-primary">⬆ Subir archivo REM</a>
+    </div>
+
+</div>
+
+<!-- ========= MODAL ELIMINAR ========= -->
+<div id="modal-eliminar" class="modal-overlay">
+    <div class="modal">
+        <h3>🗑 Marcar período como inactivo</h3>
+        <p>Este período pasará a la lista de <strong>inactivos</strong> pero no se eliminará de la base de datos.</p>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modal-eliminar')">Cancelar</button>
+            <button type="button" class="btn btn-danger" onclick="confirmSubmit('modal-eliminar')">
+                Sí, marcar como inactivo
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ========= MODAL REACTIVAR ========= -->
+<div id="modal-reactivar" class="modal-overlay">
+    <div class="modal">
+        <h3>🔄 Reactivar período</h3>
+        <p>¿Deseas mover este período nuevamente a la lista de <strong>activos</strong>?</p>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modal-reactivar')">Cancelar</button>
+            <button type="button" class="btn btn-primary" onclick="confirmSubmit('modal-reactivar')">
+                Sí, reactivar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let formPendiente = null;
+    let modalActual = null;
+
+    function closeModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.style.display = 'none';
+        formPendiente = null;
+        modalActual = null;
+    }
+
+    function confirmSubmit(modalId) {
+        if (formPendiente) {
+            const f = formPendiente;
+            closeModal(modalId);
+            f.submit();
+        }
+    }
+
+    function wireConfirm(selectorForm, modalId) {
+        document.querySelectorAll(selectorForm).forEach(function (form) {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault(); // evitamos submit inmediato
+                formPendiente = this;
+                modalActual = modalId;
+                const modal = document.getElementById(modalId);
+                if (modal) modal.style.display = 'flex';
+            });
+        });
+    }
+
+    // Conectar formularios a sus modales
+    document.addEventListener('DOMContentLoaded', function () {
+        wireConfirm('.form-eliminar', 'modal-eliminar');
+        wireConfirm('.form-reactivar', 'modal-reactivar');
+    });
+
+    // Cerrar modal si se hace click fuera de la caja
+    document.addEventListener('click', function (e) {
+        if (modalActual) {
+            const overlay = document.getElementById(modalActual);
+            const modalBox = overlay ? overlay.querySelector('.modal') : null;
+            if (overlay && modalBox && e.target === overlay) {
+                closeModal(modalActual);
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

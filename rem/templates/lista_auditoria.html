@@ -1,0 +1,595 @@
+{% load tz %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <title>Bitácora de auditoría · Sistema REM CESFAM</title>
+    <link rel="icon" href="{% static 'favicon/rem_favicon.ico' %}">
+    <link rel="shortcut icon" href="{% static 'favicon/rem_favicon.ico' %}">
+    <style>
+        :root {
+            --primary: #1d4ed8;
+            --primary-light: #3b82f6;
+
+            --bg: #f1f5f9;
+            --header-bg: linear-gradient(135deg, #1d4ed8, #0ea5e9);
+
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+
+            --card-bg: #ffffff;
+            --card-shadow: rgba(15,23,42,0.14);
+
+            --table-header-bg: #e5edff;
+            --table-border: #cbd5f5;
+
+            --footer-text: #64748b;
+        }
+
+        body.dark {
+            --bg: #020617;
+            --header-bg: linear-gradient(135deg, #020617, #0f172a);
+
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+
+            --card-bg: #0f172a;
+            --card-shadow: rgba(0,0,0,0.6);
+
+            --table-header-bg: #020617;
+            --table-border: #1e293b;
+
+            --footer-text: #94a3b8;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            color: var(--text-main);
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* HEADER */
+        header {
+            background: var(--header-bg);
+            padding: 18px 28px;
+            color: white;
+            box-shadow: 0 2px 15px rgba(0,0,0,.25);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-left p {
+            margin: 4px 0 0;
+            font-size: 13px;
+            opacity: .85;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .toggle-btn,
+        .back-btn {
+            border: 1px solid rgba(255,255,255,0.4);
+            padding: 7px 14px;
+            border-radius: 999px;
+            cursor: pointer;
+            background: rgba(255,255,255,0.15);
+            color: white;
+            font-size: 13px;
+            backdrop-filter: blur(6px);
+            transition: 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .toggle-btn:hover,
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* CONTENEDOR */
+        .container {
+            max-width: 1200px;
+            margin: 30px auto 40px;
+            padding: 0 20px;
+        }
+
+        .page-title {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .page-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 18px;
+        }
+
+        /* CARD FILTROS + TABLA */
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 18px 20px 20px;
+            box-shadow: 0 8px 20px var(--card-shadow);
+            border: 1px solid rgba(15,23,42,0.15);
+        }
+
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-end;
+            margin-bottom: 16px;
+        }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 160px;
+        }
+
+        .field-group label {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .field-group input,
+        .field-group select {
+            padding: 7px 10px;
+            border-radius: 999px;
+            border: 1px solid #cbd5e1;
+            font-size: 13px;
+            outline: none;
+            min-width: 0;
+            background: rgba(255,255,255,0.9);
+        }
+
+        body.dark .field-group input,
+        body.dark .field-group select {
+            background: #020617;
+            border-color: #1e293b;
+            color: var(--text-main);
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            border-radius: 999px;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            padding: 8px 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-light);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid #cbd5e1;
+            color: var(--text-muted);
+        }
+
+        body.dark .btn-secondary {
+            border-color: #1e293b;
+            color: var(--text-muted);
+        }
+
+        /* TABLA */
+        .table-wrapper {
+            margin-top: 8px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            min-width: 800px;
+        }
+
+        thead {
+            background: var(--table-header-bg);
+        }
+
+        thead th {
+            text-align: left;
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--table-border);
+            font-weight: 600;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--table-border);
+        }
+
+        tbody tr:nth-child(even) {
+            background: rgba(148, 163, 184, 0.06);
+        }
+
+        tbody td {
+            padding: 7px 10px;
+            vertical-align: top;
+        }
+
+        .col-fecha {
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .col-usuario {
+            white-space: nowrap;
+            font-weight: 500;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 9px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+        }
+
+        .badge-login {
+            background: rgba(16,185,129,0.15);
+            color: #059669;
+        }
+
+        .badge-logout {
+            background: rgba(248,113,113,0.12);
+            color: #ef4444;
+        }
+
+        .badge-upload {
+            background: rgba(59,130,246,0.15);
+            color: #2563eb;
+        }
+
+        .badge-procesar {
+            background: rgba(234,179,8,0.15);
+            color: #b45309;
+        }
+
+        .badge-periodo {
+            background: rgba(129,140,248,0.18);
+            color: #4f46e5;
+        }
+
+        .badge-otra {
+            background: rgba(148,163,184,0.15);
+            color: #475569;
+        }
+
+        .tag-ip {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .ua-short {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 3px;
+            margin-bottom: 3px;
+        }
+
+        .ua {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .ua-toggle {
+            border: none;
+            background: transparent;
+            color: var(--primary-light);
+            cursor: pointer;
+            font-size: 11px;
+            padding: 0;
+        }
+
+        /* PAGINACIÓN */
+        .pagination {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 6px;
+            margin-top: 14px;
+            font-size: 12px;
+        }
+
+        .pagination a,
+        .pagination span {
+            padding: 4px 9px;
+            border-radius: 999px;
+            text-decoration: none;
+        }
+
+        .pagination a {
+            border: 1px solid #cbd5e1;
+            color: var(--text-main);
+        }
+
+        .pagination a:hover {
+            background: rgba(148,163,184,0.1);
+        }
+
+        .pagination .current {
+            background: var(--primary);
+            color: white;
+            border: 1px solid var(--primary);
+        }
+
+        body.dark .pagination a {
+            border-color: #334155;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 11px;
+            color: var(--footer-text);
+            margin-top: 26px;
+        }
+
+        @media (max-width: 768px) {
+            .filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-left">
+        <h1>📝 Bitácora de auditoría</h1>
+        <p>Registro detallado de acciones realizadas en el Sistema REM – CESFAM.</p>
+    </div>
+    <div class="header-right">
+        <a href="{% url 'home' %}" class="back-btn">🏠 Inicio</a>
+        <button id="themeToggle" class="toggle-btn">🌙 Modo oscuro</button>
+    </div>
+</header>
+
+<div class="container">
+
+    <h2 class="page-title">Auditoría del sistema</h2>
+    <p class="page-subtitle">
+        Revisa quién hizo qué acción, en qué momento, desde qué IP y con qué navegador.
+    </p>
+
+    <div class="card">
+
+        <!-- FILTROS -->
+        <form method="get" class="filters">
+            <div class="field-group">
+                <label for="usuario">Usuario</label>
+                <input type="text"
+                       id="usuario"
+                       name="usuario"
+                       placeholder="ej: martinf"
+                       value="{{ filtro_usuario }}">
+            </div>
+
+            <div class="field-group">
+                <label for="accion">Tipo de acción</label>
+                <select id="accion" name="accion">
+                    <option value="">Todas</option>
+                    {% for value,label in acciones %}
+                        <option value="{{ value }}" {% if filtro_accion == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="field-group">
+                <label>&nbsp;</label>
+                <button type="submit" class="btn-primary">🔎 Aplicar filtros</button>
+            </div>
+
+            <div class="field-group">
+                <label>&nbsp;</label>
+                <a href="{% url 'lista_auditoria' %}" class="btn-secondary">✖ Limpiar filtros</a>
+            </div>
+        </form>
+
+        <!-- TABLA -->
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha / hora</th>
+                        <th>Usuario</th>
+                        <th>Acción</th>
+                        <th>Descripción</th>
+                        <th>IP / Navegador</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% if page_obj.object_list %}
+                    {% for log in page_obj %}
+                        <tr>
+                            <td class="col-fecha">
+                                {{ log.fecha_hora|localtime|date:"d-m-Y H:i:s" }}
+                            </td>
+                            <td class="col-usuario">
+                                {% if log.usuario %}
+                                    {{ log.usuario.username }}
+                                {% else %}
+                                    <span style="color: var(--text-muted);">Anónimo</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if log.accion == "LOGIN" %}
+                                    <span class="badge badge-login">LOGIN</span>
+                                {% elif log.accion == "LOGOUT" %}
+                                    <span class="badge badge-logout">LOGOUT</span>
+                                {% elif log.accion == "UPLOAD_REM" %}
+                                    <span class="badge badge-upload">Subida REM</span>
+                                {% elif log.accion == "PROCESAR_REM" %}
+                                    <span class="badge badge-procesar">Procesar REM</span>
+                                {% elif log.accion == "CRUD_PERIODO" %}
+                                    <span class="badge badge-periodo">Períodos</span>
+                                {% else %}
+                                    <span class="badge badge-otra">{{ log.accion }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ log.descripcion }}</td>
+                            <td>
+                                {% if log.ip %}
+                                    <div class="tag-ip">IP: {{ log.ip }}</div>
+                                {% endif %}
+                                {% if log.user_agent %}
+                                    <div class="ua-block" data-ua="{{ log.user_agent|escape }}">
+                                        <div class="ua-short"></div>
+                                        <details>
+                                            <summary class="ua-toggle">Ver user agent completo</summary>
+                                            <div class="ua">{{ log.user_agent }}</div>
+                                        </details>
+                                    </div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align:center; padding:18px 10px; color: var(--text-muted);">
+                            No hay registros de auditoría para los filtros seleccionados.
+                        </td>
+                    </tr>
+                {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PAGINACIÓN -->
+        {% if page_obj.paginator.num_pages > 1 %}
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}&usuario={{ filtro_usuario }}&accion={{ filtro_accion }}">
+                        ← Anterior
+                    </a>
+                {% endif %}
+
+                <span class="current">
+                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}&usuario={{ filtro_usuario }}&accion={{ filtro_accion }}">
+                        Siguiente →
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+
+    </div>
+
+    <footer>
+        Proyecto de Titulación — Ingeniería en Informática · CESFAM Ultraestación “Dr. Raúl Martínez González”
+    </footer>
+
+</div>
+
+<script>
+    const body = document.body;
+    const btn = document.getElementById("themeToggle");
+
+    if (localStorage.getItem("theme") === "dark") {
+        body.classList.add("dark");
+        btn.textContent = "☀️ Modo claro";
+    }
+
+    btn.addEventListener("click", () => {
+        body.classList.toggle("dark");
+        if (body.classList.contains("dark")) {
+            localStorage.setItem("theme", "dark");
+            btn.textContent = "☀️ Modo claro";
+        } else {
+            localStorage.setItem("theme", "light");
+            btn.textContent = "🌙 Modo oscuro";
+        }
+    });
+
+    // --------- Resumen legible de User-Agent ---------
+    function resumirUA(ua) {
+        if (!ua) return "";
+
+        let navegador = "Navegador desconocido";
+
+        if (ua.includes("Edg/")) {
+            const v = ua.split("Edg/")[1].split(" ")[0];
+            navegador = "Microsoft Edge " + v;
+        } else if (ua.includes("Chrome/")) {
+            const v = ua.split("Chrome/")[1].split(" ")[0];
+            navegador = "Chrome " + v;
+        } else if (ua.includes("Firefox/")) {
+            const v = ua.split("Firefox/")[1].split(" ")[0];
+            navegador = "Firefox " + v;
+        } else if (ua.includes("Safari/") && !ua.includes("Chrome/")) {
+            const v = ua.split("Safari/")[1].split(" ")[0];
+            navegador = "Safari " + v;
+        }
+
+        let sistema = "";
+        if (ua.includes("Windows NT 10.0")) {
+            sistema = "Windows 10/11";
+        } else if (ua.includes("Windows NT 11.0")) {
+            sistema = "Windows 11";
+        } else if (ua.includes("Mac OS X")) {
+            sistema = "macOS";
+        } else if (ua.includes("Linux")) {
+            sistema = "Linux";
+        }
+
+        if (sistema) {
+            return navegador + " en " + sistema;
+        }
+        return navegador;
+    }
+
+    document.querySelectorAll(".ua-block").forEach(block => {
+        const ua = block.dataset.ua || "";
+        const short = resumirUA(ua);
+        const shortDiv = block.querySelector(".ua-short");
+        if (shortDiv && short) {
+            shortDiv.textContent = short;
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <title>Reportes – Sistema REM CESFAM</title>
+    <link rel="icon" href="{% static 'favicon/rem_favicon.ico' %}">
+    <link rel="shortcut icon" href="{% static 'favicon/rem_favicon.ico' %}">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            background: radial-gradient(circle at top left, #020617, #000 70%);
+            color: #e5e7eb;
+        }
+
+        header {
+            padding: 20px 32px;
+            border-bottom: 1px solid #1f2937;
+            background: rgba(15,23,42,0.96);
+            backdrop-filter: blur(14px);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        header h1 { margin: 0; font-size: 22px; font-weight: 600; }
+        header p { margin: 4px 0 0; font-size: 13px; color: #9ca3af; }
+
+        main {
+            max-width: 1200px;
+            margin: 24px auto 40px;
+            padding: 0 16px 32px;
+        }
+
+        h2 { margin: 0 0 12px; font-size: 20px; }
+
+        .badge-prototipo {
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            background: rgba(59,130,246,0.15);
+            border: 1px solid rgba(59,130,246,0.4);
+            color: #bfdbfe;
+            margin-left: 8px;
+        }
+
+        .periodo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 24px;
+            align-items: start;
+        }
+
+        .periodo-card {
+            padding: 18px 20px;
+            border-radius: 18px;
+            background:
+                radial-gradient(circle at 15% 10%, rgba(59,130,246,0.28), transparent 60%),
+                radial-gradient(circle at 85% 90%, rgba(16,185,129,0.23), transparent 60%),
+                #020617;
+            border: 1px solid rgba(31,41,55,0.9);
+            box-shadow: 0 10px 25px rgba(15,23,42,0.65);
+            min-height: 240px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .periodo-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            background: rgba(15,23,42,0.85);
+            border: 1px solid rgba(55,65,81,0.8);
+            color: #e5e7eb;
+        }
+
+        .periodo-title {
+            margin-top: 10px;
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .periodo-sub {
+            font-size: 13px;
+            margin-top: 4px;
+            color: #cbd5e1;
+        }
+
+        .progress-label {
+            margin-top: 14px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .progress-bar {
+            margin-top: 6px;
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(15,23,42,0.85);
+            overflow: hidden;
+        }
+
+        .progress-inner {
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #22c55e, #a3e635);
+        }
+
+        .periodo-footer {
+            margin-top: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+        }
+        .badge-completo {
+            background: rgba(34,197,94,0.18);
+            color: #bbf7d0;
+            border: 1px solid rgba(22,163,74,0.8);
+        }
+        .badge-parcial {
+            background: rgba(252,211,77,0.18);
+            color: #fef3c7;
+            border: 1px solid rgba(234,179,8,0.7);
+        }
+        .badge-vacio {
+            background: rgba(148,163,184,0.18);
+            color: #e2e8f0;
+            border: 1px solid rgba(148,163,184,0.7);
+        }
+
+        .btn {
+            display: inline-flex;
+            padding: 7px 14px;
+            border-radius: 999px;
+            font-size: 13px;
+            text-decoration: none;
+        }
+        .btn-primary {
+            background: #2563eb;
+            border: 1px solid #3b82f6;
+            color: #e5e7eb;
+        }
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .empty {
+            margin-top: 16px;
+            padding: 16px;
+            border: 1px dashed #475569;
+            border-radius: 10px;
+            background: rgba(15,23,42,0.55);
+            color: #cbd5e1;
+            font-size: 14px;
+        }
+
+        footer {
+            text-align: right;
+            padding: 16px;
+            font-size: 11px;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Reportes del Sistema REM – CESFAM Ultraestación</h1>
+    <p>Monitoreo de consolidación por período y acceso a reportes prototipo.</p>
+</header>
+
+<main>
+
+    <h2>
+        Períodos y estado de consolidación
+        <span class="badge-prototipo">Prototipo A01 – Sección A</span>
+    </h2>
+
+    <p style="font-size:12px;color:#9ca3af;margin-top:6px;max-width:900px;">
+        ℹ️ Los reportes se generan por período individual.
+        La comparación entre períodos no se encuentra habilitada debido a
+        cambios estructurales en los REM entre años.
+    </p>
+
+    {% if estado_periodos %}
+        <div class="periodo-grid">
+            {% for item in estado_periodos %}
+                <div class="periodo-card">
+
+                    <div>
+                        <div class="periodo-pill">
+                            📅 {{ item.periodo.mes }}/{{ item.periodo.anio }}
+                        </div>
+
+                        <div class="periodo-title">Consolidación REM</div>
+
+                        <div class="periodo-sub">
+                            {% if item.estado == "sin_archivos" %}
+                                No existen archivos REM cargados para este período.
+                            {% elif item.estado == "cargado_no_procesado" %}
+                                {{ item.total_archivos }} archivo(s) cargado(s), pendiente(s) de procesamiento.
+                            {% elif item.estado == "parcial" %}
+                                {{ item.procesados }} de {{ item.total_archivos }} archivos procesados.
+                            {% elif item.estado == "completo" %}
+                                Todos los archivos del período fueron procesados correctamente.
+                            {% endif %}
+                        </div>
+
+                        <div class="progress-label">
+                            <span>Avance</span>
+                            <span>{{ item.porcentaje }}%</span>
+                        </div>
+
+                        <div class="progress-bar">
+                            <div class="progress-inner" style="width: {{ item.porcentaje }}%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="periodo-footer">
+
+                        {% if item.estado == "sin_archivos" %}
+                            <span class="badge badge-vacio">Sin archivos</span>
+                        {% elif item.estado == "cargado_no_procesado" %}
+                            <span class="badge badge-parcial">Pendiente de procesamiento</span>
+                        {% elif item.estado == "parcial" %}
+                            <span class="badge badge-parcial">Procesamiento parcial</span>
+                        {% elif item.estado == "completo" %}
+                            <span class="badge badge-completo">Completado</span>
+                        {% endif %}
+
+                        {% if item.estado == "parcial" or item.estado == "completo" %}
+                            <a class="btn btn-primary"
+                               href="{% url 'reporte_a01_seccion_a' item.periodo.id_periodo %}">
+                                Ver A01 - Sección A
+                            </a>
+                        {% else %}
+                            <span class="badge badge-vacio">Reporte no disponible</span>
+                        {% endif %}
+
+                    </div>
+
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty">
+            No hay períodos configurados. Crea un período en el módulo
+            <strong>“Períodos disponibles”</strong> para comenzar a usar los reportes.
+        </div>
+    {% endif %}
+
+</main>
+
+<footer>
+    Módulo de reportes — Prototipo basado en datos del REM A01 (Sección A).
+</footer>
+
+</body>
+</html>

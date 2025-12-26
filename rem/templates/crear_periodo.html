@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <title>Crear nuevo período</title>
+    <link rel="icon" href="{% static 'favicon/rem_favicon.ico' %}">
+    <link rel="shortcut icon" href="{% static 'favicon/rem_favicon.ico' %}">
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            background: #f3f4f6;
+            color: #111827;
+        }
+
+        .page-wrapper {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 520px;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 24px 28px 22px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .icon-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 999px;
+            background: #eef2ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #4f46e5;
+        }
+
+        .card-header h1 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        .alert-error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 14px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            color: #374151;
+        }
+
+        input[type="number"],
+        input[type="text"] {
+            width: 100%;
+            padding: 9px 10px;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            font-size: 14px;
+            margin-bottom: 14px;
+            outline: none;
+            transition: border-color 0.12s ease, box-shadow 0.12s ease;
+        }
+
+        input[type="number"]:focus,
+        input[type="text"]:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 1px #2563eb22;
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: -8px;
+            margin-bottom: 10px;
+        }
+
+        .actions {
+            margin-top: 10px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+        }
+
+        .btn-primary {
+            background: #22c55e;
+            border-color: #16a34a;
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background: #16a34a;
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            border-color: #d1d5db;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        @media (max-width: 600px) {
+            .card {
+                padding: 20px 18px 18px;
+            }
+            .actions {
+                flex-direction: column-reverse;
+                align-items: stretch;
+            }
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-wrapper">
+    <div class="card">
+        <div class="card-header">
+            <div class="icon-circle">＋</div>
+            <h1>Crear nuevo período</h1>
+        </div>
+
+        {% if error %}
+            <div class="alert-error">
+                {{ error }}
+            </div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <label for="anio">Año</label>
+            <input type="number" name="anio" id="anio" min="2000" max="2100"
+                   value="{{ anio|default_if_none:'' }}" required>
+
+            <label for="mes">Mes</label>
+            <input type="number" name="mes" id="mes" min="1" max="12"
+                   value="{{ mes|default_if_none:'' }}" required>
+            <div class="hint">Usa un número del 1 al 12.</div>
+
+            <label for="descripcion">Descripción</label>
+            <input type="text" name="descripcion" id="descripcion"
+                   placeholder="Ej: Enero 2025"
+                   value="{{ descripcion|default_if_none:'' }}" required>
+
+            <div class="actions">
+                <a href="{% url 'lista_periodos' %}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary">Crear período</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

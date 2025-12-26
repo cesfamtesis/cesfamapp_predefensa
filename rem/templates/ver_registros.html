@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <title>Registros procesados - {{ archivo.nombre_original }}</title>
+    <link rel="icon" href="{% static 'favicon/rem_favicon.ico' %}">
+    <link rel="shortcut icon" href="{% static 'favicon/rem_favicon.ico' %}">
+    <style>
+        :root {
+            --bg-body: #f3f4f6;
+            --bg-card: #ffffff;
+            --bg-header: #0b3b77;
+            --bg-header-soft: #2563eb;
+            --bg-table-head: #f3f4f6;
+            --bg-table-data: #fffce8;   /* amarillo suave tipo REM */
+            --border-soft: #d1d5db;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --text-strong: #111827;
+            --accent: #2563eb;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            background: var(--bg-body);
+            color: var(--text-main);
+        }
+
+        /* ================= HEADER SUPERIOR ================= */
+
+        header {
+            background: var(--bg-header);
+            padding: 14px 24px;
+            box-shadow: 0 1px 6px rgba(15, 23, 42, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #e5e7eb;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        header h1 span {
+            font-size: 22px;
+        }
+
+        header a {
+            text-decoration: none;
+            font-size: 13px;
+            color: #bfdbfe;
+        }
+
+        header a:hover {
+            text-decoration: underline;
+        }
+
+        .container {
+            max-width: 100%;
+            width: 100%;
+            margin: 18px auto 32px;
+            padding: 0 24px;
+        }
+
+        /* ================= INFO DEL ARCHIVO ================= */
+
+        .info-panel {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 12px 16px;
+            box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+            margin-bottom: 14px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .info-panel strong {
+            color: var(--text-strong);
+        }
+
+        .info-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 24px;
+            margin-top: 6px;
+        }
+
+        .info-item span {
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            color: #9ca3af;
+        }
+
+        /* ================= BARRA SUPERIOR DE CONSULTA (tipo reportesREM) ================= */
+
+        .query-bar {
+            background: var(--bg-card);
+            border-radius: 12px;
+            box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+            padding: 10px 16px;
+            margin-bottom: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 16px;
+        }
+
+        .query-bar-left {
+            font-size: 13px;
+            color: #4b5563;
+        }
+
+        .query-bar-left .qb-title {
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+
+        .query-bar-left .qb-subtitle {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .query-bar-right {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 14px;
+            align-items: flex-end;
+        }
+
+        .qb-group {
+            display: flex;
+            flex-direction: column;
+            font-size: 12px;
+            color: #374151;
+        }
+
+        .qb-group label {
+            margin-bottom: 3px;
+            font-weight: 500;
+        }
+
+        select {
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid #d1d5db;
+            font-size: 13px;
+            min-width: 140px;
+            background: #f9fafb;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            border: 1px solid var(--accent);
+            color: #1d4ed8;
+            background: #eff6ff;
+            cursor: pointer;
+            transition: background 0.12s ease, color 0.12s ease, transform 0.05s ease;
+        }
+
+        .btn:hover {
+            background: #1d4ed8;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            border-color: #9ca3af;
+            color: #374151;
+            background: #e5e7eb;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+            color: white;
+        }
+
+        /* ================= RESUMEN + TÍTULO REM ================= */
+
+        .summary {
+            margin: 10px 0 4px;
+            font-size: 13px;
+            color: #4b5563;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #e0f2fe;
+            color: #0369a1;
+            border-radius: 999px;
+            padding: 2px 10px;
+            font-size: 11px;
+            margin-left: 4px;
+            text-transform: uppercase;
+            letter-spacing: .03em;
+        }
+
+        .rem-title {
+            margin-top: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        /* ================= TABLA ================= */
+
+        .table-wrapper {
+        margin-top: 8px;
+        background: var(--bg-card);
+        border-radius: 12px;
+        box-shadow: 0 1px 4px rgba(15,23,42,0.08);
+        padding: 8px;
+
+        /* sin alto fijo ni scroll vertical interno */
+        overflow-x: auto;   /* solo scroll horizontal si la tabla es muy ancha */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: var(--bg-table-head);
+        }
+
+        th, td {
+            padding: 4px 6px;
+            border: 1px solid var(--border-soft);
+            font-size: 11px;
+            word-wrap: break-word;
+            white-space: normal;
+        }
+
+        th {
+            text-align: center;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        /* encabezado pegado arriba al hacer scroll */
+        thead th {
+            position: sticky;
+            top: 0;
+            z-index: 3;
+        }
+
+        /* fila de grupos (RANGO ETARIO, SEXO, etc) un poquito más alta */
+        .header-group-row th {
+            font-size: 11px;
+            background: #e5e7eb;
+        }
+
+        tbody tr:nth-child(odd) {
+            background: var(--bg-table-data);
+        }
+
+        tbody tr:nth-child(even) {
+            background: #fffaf0;
+        }
+
+        tbody tr:hover {
+            background: #fef3c7;
+        }
+
+        .cell-num {
+            text-align: right;
+        }
+
+        .cell-text {
+            text-align: left;
+        }
+
+        .row-total td {
+            font-weight: 600;
+            background: #e5e7eb;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 24px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        /* ================= PAGINACIÓN ================= */
+
+        .pagination {
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            font-size: 12px;
+            align-items: center;
+        }
+
+        .pagination a, .pagination span {
+            padding: 4px 8px;
+            border-radius: 999px;
+            text-decoration: none;
+        }
+
+        .pagination a {
+            color: #2563eb;
+            border: 1px solid transparent;
+        }
+
+        .pagination a:hover {
+            border-color: #bfdbfe;
+            background: #eff6ff;
+        }
+
+        .pagination .current {
+            background: #2563eb;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1><span>📊</span> Registros procesados</h1>
+    <a href="/archivos/">⬅ Volver a archivos</a>
+</header>
+
+<div class="container">
+
+    <!-- INFO DEL ARCHIVO / PERÍODO -->
+    <div class="info-panel">
+        <div><strong>Archivo:</strong> {{ archivo.nombre_original }}</div>
+        <div class="info-grid">
+            {% if archivo.periodo %}
+                <div class="info-item">
+                    <span>Período asociado</span>
+                    <strong>{{ archivo.periodo }}</strong>
+                </div>
+            {% endif %}
+            {% if archivo.descripcion %}
+                <div class="info-item">
+                    <span>Descripción</span>
+                    <strong>{{ archivo.descripcion }}</strong>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- BARRA SUPERIOR DE CONSULTA (tipo reportesREM) -->
+    <form method="get" class="query-bar">
+        <div class="query-bar-left">
+            <div class="qb-title">Reportes REM – CESFAM Ultraestación</div>
+            <div class="qb-subtitle">
+                Visualización de registros procesados
+                {% if archivo.periodo %} · Período {{ archivo.periodo }}{% endif %}
+            </div>
+        </div>
+
+        <div class="query-bar-right">
+            <div class="qb-group">
+                <label for="hoja">REM</label>
+                <select name="hoja" id="hoja">
+                    <option value="">Todas</option>
+                    {% for rem in opciones_rem %}
+                        <option value="{{ rem.codigo }}"
+                                {% if rem.codigo == hoja_actual %}selected{% endif %}>
+                            {{ rem.label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="qb-group">
+                <label for="seccion">Sección</label>
+                <select name="seccion" id="seccion">
+                    <option value="">Todas</option>
+                    {% for s in secciones_disponibles %}
+                        <option value="{{ s }}" {% if s == seccion_actual %}selected{% endif %}>{{ s }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="qb-group">
+                <label>&nbsp;</label>
+                <button type="submit" class="btn">Consultar</button>
+            </div>
+
+            <div class="qb-group">
+                <label>&nbsp;</label>
+                <a href="?" class="btn btn-secondary">Reset</a>
+            </div>
+        </div>
+    </form>
+
+    <!-- RESUMEN -->
+    <div class="summary">
+        Total registros en esta vista:
+        <strong>{{ page_obj.paginator.count }}</strong>
+        {% if hoja_actual %}
+            <span class="tag">REM {{ hoja_actual }}</span>
+        {% endif %}
+        {% if seccion_actual %}
+            <span class="tag">Sección {{ seccion_actual }}</span>
+        {% endif %}
+    </div>
+
+    <!-- TÍTULO REM / SECCIÓN (estilo MINSAL) -->
+    {% if titulo_hoja or titulo_seccion %}
+        <div class="rem-title">
+            {% if titulo_hoja %}{{ titulo_hoja }}{% endif %}
+            {% if titulo_seccion %} – {{ titulo_seccion }}{% endif %}
+        </div>
+    {% endif %}
+
+    <!-- TABLA DE REGISTROS -->
+    {% if filas_tabla %}
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                {% if hoja_actual == "A01" and seccion_actual == "A" %}
+                    <!-- CABECERA ESPECIAL PARA REM A01 / SECCIÓN A -->
+                    <tr class="header-group-row">
+                        <th class="cell-text" rowspan="2">TIPO DE CONTROL</th>
+                        <th class="cell-text" rowspan="2">PROFESIONAL</th>
+                        <th class="cell-num"  rowspan="2">TOTAL</th>
+
+                        <th colspan="17">RANGO ETARIO</th>
+                        <th colspan="2">SEXO</th>
+
+                        <th rowspan="2">Control con pareja, familiar u otro</th>
+                        <th rowspan="2">Control de diada con presencia del padre</th>
+                        <th rowspan="2">Espacios Amigables/ Adolescentes</th>
+                        <th rowspan="2">Niños, Niñas, Adolescentes y Jóvenes SENAME</th>
+                        <th rowspan="2">Niños, Niñas, Adolescentes y Jóvenes Mejor Niñez</th>
+                        <th rowspan="2">Pueblos Originarios</th>
+                        <th rowspan="2">Migrantes</th>
+                        <th rowspan="2">Personas con discapacidad</th>
+
+                        <th colspan="3">Identificación de género</th>
+                        <th rowspan="2">Adolescente acude a control MAC con pareja</th>
+                    </tr>
+                    <tr>
+                        <th>Menos de 4 años</th>
+                        <th>5 - 9 años</th>
+                        <th>10 - 14 años</th>
+                        <th>15 - 19 años</th>
+                        <th>20 - 24 años</th>
+                        <th>25 - 29 años</th>
+                        <th>30 - 34 años</th>
+                        <th>35 - 39 años</th>
+                        <th>40 - 44 años</th>
+                        <th>45 - 49 años</th>
+                        <th>50 - 54 años</th>
+                        <th>55 - 59 años</th>
+                        <th>60 - 64 años</th>
+                        <th>65 - 69 años</th>
+                        <th>70 - 74 años</th>
+                        <th>75 - 79 años</th>
+                        <th>80 y más años</th>
+
+                        <th>Hombres</th>
+                        <th>Mujeres</th>
+
+                        <th>Trans masculino</th>
+                        <th>Trans femenina</th>
+                        <th>No binarie</th>
+                    </tr>
+                    {% elif hoja_actual == "A01" and seccion_actual == "B" %}
+                        <!-- CABECERA ESPECIAL PARA REM A01 / SECCIÓN B -->
+                        <tr class="header-group-row">
+                            <th class="cell-text" rowspan="2">TIPO DE CONTROL</th>
+                            <th class="cell-text" rowspan="2">PROFESIONAL</th>
+                            <th colspan="3">TOTAL</th>
+                            <th colspan="30">RANGO ETARIO</th>
+                            <th colspan="2">CONTROL CON PRESENCIA DEL PADRE</th>
+                            <th colspan="4">OTROS</th>
+                        </tr>
+                        <tr>
+                            <th>Total Ambos Sexos</th>
+                            <th>Total Hombres</th>
+                            <th>Total Mujeres</th>
+                            <th>&lt;1 mes</th>
+                            <th>1 mes</th>
+                            <th>2 meses</th>
+                            <th>3 meses</th>
+                            <th>4 meses</th>
+                            <th>5 meses</th>
+                            <th>6 meses</th>
+                            <th>7–11 meses</th>
+                            <th>12–17 meses</th>
+                            <th>18–23 meses</th>
+                            <th>24–47 meses</th>
+                            <th>48–59 meses</th>
+                            <th>60–71 meses</th>
+                            <th>6–9 años</th>
+                            <th>10–14 años</th>
+                            <th>15–19 años</th>
+                            <th>20–24 años</th>
+                            <th>25–29 años</th>
+                            <th>30–34 años</th>
+                            <th>35–39 años</th>
+                            <th>40–44 años</th>
+                            <th>45–49 años</th>
+                            <th>50–54 años</th>
+                            <th>55–59 años</th>
+                            <th>60–64 años</th>
+                            <th>65–69 años</th>
+                            <th>70–74 años</th>
+                            <th>75–79 años</th>
+                            <th>80 y más años</th>
+                            <th>Menor 1 año</th>
+                            <th>1 año a 3 años 11 meses 29 días</th>
+                            <th>SENAME</th>
+                            <th>Mejor Niñez</th>
+                            <th>Pueblos Originarios</th>
+                            <th>Migrantes</th>
+                        </tr>
+                {% else %}
+                    <!-- CABECERA GENÉRICA PARA EL RESTO -->
+                    <tr class="header-group-row">
+                        <th colspan="{{ columnas_bonitas|length }}">VALORES REGISTRADOS</th>
+                    </tr>
+                    <tr>
+                        {% for col_bonita in columnas_bonitas %}
+                            {% if forloop.counter0 < num_desc_cols %}
+                                <th class="cell-text">{{ col_bonita }}</th>
+                            {% else %}
+                                <th>{{ col_bonita }}</th>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                {% endif %}
+                </thead>
+                <tbody>
+                {% if hoja_actual == "A01" and seccion_actual == "A" %}
+                    {% for fila in filas_tabla %}
+                        <tr{% if fila.es_total %} class="row-total"{% endif %}>
+                            <td class="cell-text">
+                                {% with valor=fila.celdas.0 %}
+                                    {% if valor and valor != "-" %}
+                                        {{ valor }}
+                                    {% endif %}
+                                {% endwith %}
+                            </td>
+                            <td class="cell-text">
+                                {% with valor=fila.celdas.1 %}
+                                    {% if valor and valor != "-" %}
+                                        {{ valor }}
+                                    {% endif %}
+                                {% endwith %}
+                            </td>
+                            <td class="cell-num">
+                                {% if fila.celdas.2 is not None %}
+                                    {{ fila.celdas.2 }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+
+                            <!-- Rango etario (17) -->
+                            <td class="cell-num">{{ fila.celdas.3|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.4|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.5|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.6|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.7|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.8|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.9|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.10|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.11|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.12|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.13|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.14|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.15|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.16|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.17|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.18|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.19|default:"-" }}</td>
+
+                            <!-- Sexo -->
+                            <td class="cell-num">{{ fila.celdas.20|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.21|default:"-" }}</td>
+
+                            <!-- Otras columnas sueltas -->
+                            <td class="cell-num">{{ fila.celdas.22|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.23|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.24|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.25|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.26|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.27|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.28|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.29|default:"-" }}</td>
+
+                            <!-- Identificación de género -->
+                            <td class="cell-num">{{ fila.celdas.30|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.31|default:"-" }}</td>
+                            <td class="cell-num">{{ fila.celdas.32|default:"-" }}</td>
+
+                            <!-- Adolescente acude a control MAC con pareja -->
+                            <td class="cell-num">{{ fila.celdas.33|default:"-" }}</td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    {% for fila in filas_tabla %}
+                        <tr{% if fila.es_total %} class="row-total"{% endif %}>
+                            {% for celda in fila.celdas %}
+                                {% if forloop.counter0 < num_desc_cols %}
+                                    <td class="cell-text">
+                                        {% if celda and celda != "-" %}
+                                            {{ celda }}
+                                        {% endif %}
+                                    </td>
+                                {% else %}
+                                    <td class="cell-num">
+                                        {% if celda is not None %}
+                                            {{ celda }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PAGINACIÓN -->
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page=1{% if hoja_actual %}&hoja={{ hoja_actual }}{% endif %}{% if seccion_actual %}&seccion={{ seccion_actual }}{% endif %}">« Primero</a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if hoja_actual %}&hoja={{ hoja_actual }}{% endif %}{% if seccion_actual %}&seccion={{ seccion_actual }}{% endif %}">‹ Anterior</a>
+            {% endif %}
+
+            <span class="current">
+                Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if hoja_actual %}&hoja={{ hoja_actual }}{% endif %}{% if seccion_actual %}&seccion={{ seccion_actual }}{% endif %}">Siguiente ›</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}{% if hoja_actual %}&hoja={{ hoja_actual }}{% endif %}{% if seccion_actual %}&seccion={{ seccion_actual }}{% endif %}">Última »</a>
+            {% endif %}
+        </div>
+
+    {% else %}
+        <div class="empty">
+            No hay registros procesados para este archivo
+            {% if hoja_actual or seccion_actual %}
+                con los filtros seleccionados.
+            {% else %}
+                todavía. Asegúrate de haber ejecutado el procesamiento.
+            {% endif %}
+        </div>
+    {% endif %}
+
+</div>
+
+</body>
+</html>

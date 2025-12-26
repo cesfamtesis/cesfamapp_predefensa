@@ -167,27 +167,25 @@ LOGOUT_REDIRECT_URL = "accounts:login"
 # SEGURIDAD DE SESIÓN
 # ============================================================
 
-# Tiempo máximo de inactividad (15 minutos)
 SESSION_COOKIE_AGE = 900
-
-# Renueva la sesión en cada request activo
 SESSION_SAVE_EVERY_REQUEST = True
-
-# Cierra sesión automáticamente al cerrar el navegador
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 
 # ============================================================
-# CONFIGURACIÓN DE CORREO (2FA)
+# CONFIGURACIÓN DE CORREO (2FA) - Gmail SSL (Render compatible)
 # ============================================================
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+EMAIL_PORT = 465
+EMAIL_USE_SSL = True
+EMAIL_USE_TLS = False
 
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "cesfamtesis@gmail.com")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+
+EMAIL_TIMEOUT = 10  # evita que Gunicorn se quede colgado
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
